@@ -1,0 +1,1 @@
+SELECT avg(price), count(*) FROM budget  WHERE day > '04-09-2023'

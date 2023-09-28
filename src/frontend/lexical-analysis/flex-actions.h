@@ -19,18 +19,52 @@
  * largo de aquello que se va a almacenar.
  */
 
-// Bloque de comentarios multilínea.
+// Bloque de comentarios 
 void BeginCommentPatternAction();
 void EndCommentPatternAction();
 
-// Patrones terminales del lenguaje diseñado.
-token AdditionOperatorPatternAction();
-token CloseParenthesisPatternAction();
-token DivisionOperatorPatternAction();
-token IntegerPatternAction(const char * lexeme, const int length);
-token MultiplicationOperatorPatternAction();
+void IgnoredPatternAction(const char* text, int length);
+token SelectPatternAction();
+token FromPatternAction();
+token WherePatternAction();
+token GoEPatternAction();
+token GreaterPatternAction();
+token LoEPatternAction();
+token LessPatternAction();
+token NotEqualPatternAction();
+token AndPatternAction();
+token OrPatternAction();
+token NotPatternAction();
+token InPatternAction();
+token GroupPatternAction();
+token OrderPatternAction();
+token ByPatternAction();
+token JoinPatternAction();
+token NaturalPatternAction();
+token LeftPatternAction();
+token RightPatternAction();
+token OuterPatternAction();
+token AllPatternAction();
+token SumPatternAction();
+token CountPatternAction();
+token AvgPatternAction();
+token MaxPatternAction();
+token MinPatternAction();
+token NullPatternAction();
+token IsPatternAction();
+token AsPatternAction();
+token EverythingPatternAction();
+token CommaPatternAction();
 token OpenParenthesisPatternAction();
-token SubtractionOperatorPatternAction();
+token CloseParenthesisPatternAction();
+token EqualPatternAction();
+token IntegerPatternAction(const char* text, int length);
+token LetterPatternAction(const char* text, int length);
+token MulPatternAction();
+token DivPatternAction();
+token AddPatternAction();
+token SubPatternAction();
+token  ApstrophePatternAction();
 
 // Patrón desconocido, permite abortar debido a un error de sintaxis.
 token UnknownPatternAction(const char * lexeme, const int length);

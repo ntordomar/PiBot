@@ -1,4 +1,4 @@
-[![✗](https://img.shields.io/badge/Release-v0.3.0-ffb600.svg?style=for-the-badge)](https://github.com/agustin-golmar/Flex-Bison-Compiler/releases)
+# PiBotttps://img.shields.io/badge/Release-v0.3.0-ffb600.svg?style=for-the-badge)](https://github.com/agustin-golmar/Flex-Bison-Compiler/releases)
 
 # Compilador Flex/Bison
 

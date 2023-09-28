@@ -1,0 +1,1 @@
+SELECT sum(price)/cant(items) FROM food

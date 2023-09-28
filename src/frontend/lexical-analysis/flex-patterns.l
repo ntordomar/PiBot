@@ -18,27 +18,59 @@
 
 /* Patrones reutilizables. */
 digit			[0-9]
+letter          [A-Za-z]
 endline			[\n]
 whitespace		[ \f\n\r\t\v]
 
 %%
 
-"/*"										{ BEGIN(COMMENT); BeginCommentPatternAction(); }
-<COMMENT>.									{ IgnoredPatternAction(yytext, yyleng); }
-<COMMENT>{endline}+							{ IgnoredPatternAction(yytext, yyleng); }
-<COMMENT>"*/"								{ EndCommentPatternAction(); BEGIN(INITIAL); }
+"--"										{ BEGIN(COMMENT); BeginCommentPatternAction(); }
+<COMMENT>.       							{ IgnoredPatternAction(yytext, yyleng); }
+<COMMENT>{endline}							{ EndCommentPatternAction(); BEGIN(INITIAL); }
 
-"+"											{ return AdditionOperatorPatternAction(yytext); }
-"-"											{ return SubtractionOperatorPatternAction(yytext); }
-"*"											{ return MultiplicationOperatorPatternAction(yytext); }
-"/"											{ return DivisionOperatorPatternAction(yytext); }
+"SELECT"                                    { return SelectPatternAction(); }
+"FROM"                                      { return FromPatternAction(); }
+"WHERE"                                     { return WherePatternAction(); }
+">="                                        { return GoEPatternAction(); }
+">"                                         { return GreaterPatternAction(); }
+"<="                                        { return LoEPatternAction(); }
+"<"                                         { return LessPatternAction(); }
+"<>"                                        { return NotEqualPatternAction();}
+"="                                         { return EqualPatternAction();}
+"/"                                         { return DivPatternAction(); }
+"*"                                         { return MulPatternAction(); }
+"+"                                         { return AddPatternAction(); }
+"-"                                         { return SubPatternAction(); }
+"AND"                                       { return AndPatternAction(); }
+"OR"                                        { return OrPatternAction(); }
+"NOT"                                       { return NotPatternAction(); }
+"IN"                                        { return InPatternAction(); }
+"GROUP"                                     { return GroupPatternAction(); }
+"ORDER"                                     { return OrderPatternAction(); }
+"BY"                                        { return ByPatternAction(); }
+"JOIN"                                      { return JoinPatternAction(); }
+"NATURAL"                                   { return NaturalPatternAction(); }
+"LEFT"                                      { return LeftPatternAction(); }
+"RIGHT"                                     { return RightPatternAction(); }
+"OUTER"                                     { return OuterPatternAction(); }
+"ALL"                                       { return AllPatternAction(); }
+"SUM"                                       { return SumPatternAction(); }
+"COUNT"                                     { return CountPatternAction(); }
+"AVG"                                       { return AvgPatternAction(); }
+"MAX"                                       { return MaxPatternAction(); }
+"MIN"                                       { return MinPatternAction(); }
+"NULL"                                      { return NullPatternAction(); }
+"IS"                                        { return IsPatternAction(); }
+"AS"                                        { return AsPatternAction(); }
+"*"                                         { return EverythingPatternAction(); }
+","                                         { return CommaPatternAction(); }
+"("                                         { return OpenParenthesisPatternAction(); }
+")"                                         { return CloseParenthesisPatternAction();}
+"'"                                         { return ApstrophePatternAction();}
 
-"("											{ return OpenParenthesisPatternAction(yytext); }
-")"											{ return CloseParenthesisPatternAction(yytext); }
-
-{digit}+									{ return IntegerPatternAction(yytext, yyleng); }
-
-{whitespace}+								{ IgnoredPatternAction(yytext, yyleng); }
+{digit}*									{ return IntegerPatternAction(yytext, yyleng); }
+{letter}+                                   { return LetterPatternAction(yytext, yyleng); }
+{whitespace}+                               { IgnoredPatternAction(yytext, yyleng); }
 
 .											{ return UnknownPatternAction(yytext, yyleng); }
 
