@@ -1,1 +1,1 @@
-SELECT avg(price), count(*) FROM budget  WHERE day > '04-09-2023'
+SELECT AVG(price),hola,chay FROM budget  WHERE day > '5-0'

@@ -1,0 +1,2 @@
+SELECT * FROM teacher,teaches,student 
+WHERE teacher.name = teaches.teacher AND teaches.student = student.name AND student.name = 'Juan' AND student.name IS NULL

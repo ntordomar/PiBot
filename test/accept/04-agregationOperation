@@ -1,1 +1,1 @@
-SELECT sum(price)/cant(items) FROM food
+SELECT SUM(price)/COUNT(items) FROM food

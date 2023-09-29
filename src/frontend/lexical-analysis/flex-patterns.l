@@ -15,10 +15,11 @@
 
 /* Contextos de Flex. */
 %x COMMENT
+%x STRING
 
 /* Patrones reutilizables. */
 digit			[0-9]
-letter          [A-Za-z]
+letter          [A-Za-z0-9-]
 endline			[\n]
 whitespace		[ \f\n\r\t\v]
 
@@ -38,16 +39,15 @@ whitespace		[ \f\n\r\t\v]
 "<>"                                        { return NotEqualPatternAction();}
 "="                                         { return EqualPatternAction();}
 "/"                                         { return DivPatternAction(); }
-"*"                                         { return MulPatternAction(); }
+"*"                                         { return AsteriskPatternAction(); }
 "+"                                         { return AddPatternAction(); }
 "-"                                         { return SubPatternAction(); }
 "AND"                                       { return AndPatternAction(); }
 "OR"                                        { return OrPatternAction(); }
 "NOT"                                       { return NotPatternAction(); }
 "IN"                                        { return InPatternAction(); }
-"GROUP"                                     { return GroupPatternAction(); }
-"ORDER"                                     { return OrderPatternAction(); }
-"BY"                                        { return ByPatternAction(); }
+"GROUP BY"                                  { return GroupPatternAction(); }
+"ORDER BY"                                  { return OrderPatternAction(); }
 "JOIN"                                      { return JoinPatternAction(); }
 "NATURAL"                                   { return NaturalPatternAction(); }
 "LEFT"                                      { return LeftPatternAction(); }
@@ -56,19 +56,24 @@ whitespace		[ \f\n\r\t\v]
 "ALL"                                       { return AllPatternAction(); }
 "SUM"                                       { return SumPatternAction(); }
 "COUNT"                                     { return CountPatternAction(); }
+"HAVING"                                     { return HavingPatternAction(); }
 "AVG"                                       { return AvgPatternAction(); }
 "MAX"                                       { return MaxPatternAction(); }
 "MIN"                                       { return MinPatternAction(); }
 "NULL"                                      { return NullPatternAction(); }
 "IS"                                        { return IsPatternAction(); }
 "AS"                                        { return AsPatternAction(); }
-"*"                                         { return EverythingPatternAction(); }
+"ON"                                        { return OnPatternAction(); }
 ","                                         { return CommaPatternAction(); }
 "("                                         { return OpenParenthesisPatternAction(); }
-")"                                         { return CloseParenthesisPatternAction();}
-"'"                                         { return ApstrophePatternAction();}
+")"                                         { return CloseParenthesisPatternAction(); }
+"."                                         { return DotPatternAction(); }
 
-{digit}*									{ return IntegerPatternAction(yytext, yyleng); }
+"'"                                         { BEGIN(STRING); ApstrophePatternAction(); }
+<STRING>{letter}+                            { return LetterPatternAction(yytext, yyleng); }
+<STRING>"'"                                 { BEGIN(INITIAL); ApstrophePatternAction(); }
+
+{digit}+									{ return IntegerPatternAction(yytext, yyleng); }
 {letter}+                                   { return LetterPatternAction(yytext, yyleng); }
 {whitespace}+                               { IgnoredPatternAction(yytext, yyleng); }
 

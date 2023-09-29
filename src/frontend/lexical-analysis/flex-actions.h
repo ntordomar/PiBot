@@ -38,7 +38,6 @@ token NotPatternAction();
 token InPatternAction();
 token GroupPatternAction();
 token OrderPatternAction();
-token ByPatternAction();
 token JoinPatternAction();
 token NaturalPatternAction();
 token LeftPatternAction();
@@ -53,23 +52,26 @@ token MinPatternAction();
 token NullPatternAction();
 token IsPatternAction();
 token AsPatternAction();
-token EverythingPatternAction();
 token CommaPatternAction();
 token OpenParenthesisPatternAction();
 token CloseParenthesisPatternAction();
 token EqualPatternAction();
 token IntegerPatternAction(const char* text, int length);
 token LetterPatternAction(const char* text, int length);
-token MulPatternAction();
+token AsteriskPatternAction();
 token DivPatternAction();
 token AddPatternAction();
 token SubPatternAction();
-token  ApstrophePatternAction();
+token ApstrophePatternAction();
+token DotPatternAction();
+token OnPatternAction();
+token HavingPatternAction();
 
 // Patrón desconocido, permite abortar debido a un error de sintaxis.
 token UnknownPatternAction(const char * lexeme, const int length);
 
 // Regla que no hace nada, permite ignorar parte de la entrada.
 void IgnoredPatternAction(const char * lexeme, const int length);
+
 
 #endif

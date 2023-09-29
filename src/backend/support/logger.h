@@ -20,4 +20,5 @@ void LogRaw(const char * const format, ...);
 
 void LogText(const char * text, const int length);
 
+
 #endif

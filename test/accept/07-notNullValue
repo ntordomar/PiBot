@@ -1,0 +1,2 @@
+SELECT * FROM teachers 
+WHERE teachers.name IS NOT NULL AND price > 3 AND year = 5
