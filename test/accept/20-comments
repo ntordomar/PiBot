@@ -1,0 +1,4 @@
+-- this is a sql query
+SELECT column1, column2
+FROM table1
+WHERE column3 = 42 -- we accept comments in the same line

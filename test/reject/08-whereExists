@@ -1,0 +1,3 @@
+SELECT NOMBRE
+FROM empleados
+WHERE EXISTS (SELECT dni FROM empleadoDelMes e WHERE e.dni = empleados.dni)

@@ -1,0 +1,4 @@
+SELECT column1, AVG(column2)
+FROM table1
+GROUP BY column1
+HAVING AVG(column2) > 10

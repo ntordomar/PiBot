@@ -1,0 +1,2 @@
+SELECT * FROM table
+WHERE column1 AND OR column2

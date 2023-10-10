@@ -1,0 +1,2 @@
+SELECT column1, column2
+FROM table1 NATURAL JOIN table2 LEFT OUTER JOIN table3 ON table1.column3 = table3.column4

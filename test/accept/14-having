@@ -1,0 +1,4 @@
+SELECT AVG(sueldo)
+FROM empleados
+GROUP BY edad
+HAVING edad = 23

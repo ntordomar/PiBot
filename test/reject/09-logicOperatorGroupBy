@@ -1,0 +1,1 @@
+SELECT column1, COUNT(column2) FROM table GROUP BY column1 AND column2
