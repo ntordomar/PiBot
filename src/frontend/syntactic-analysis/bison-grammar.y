@@ -32,6 +32,7 @@
 	int order_by_statement;
 	int constant;
 	int operator;
+	int array;
     // int table_list;
 	// int condition;
 	
@@ -117,6 +118,7 @@
 %type <group_by_statement> group_by_statement
 %type <order_by_statement> order_by_statement
 %type <operator> operator
+%type <array> array
 
 
 // %type <table_list> table_list
@@ -192,14 +194,16 @@ from_statement: FROM tables																{ $$ = 0; }
 
 tables: table COMMA tables																{ $$ = 0; }
 		| table																			{ $$ = 0; }
-		| table JOIN tables ON where_condition											{ $$ = 0; }
-		| table NATURAL JOIN tables														{ $$ = 0; }
-		| table LEFT OUTER JOIN tables ON where_condition								{ $$ = 0; }
-		| table RIGHT OUTER JOIN tables ON where_condition								{ $$ = 0; }
-		| table OUTER JOIN tables ON where_condition									{ $$ = 0; }	
-		| table LEFT JOIN tables ON where_condition										{ $$ = 0; }
-		| table RIGHT JOIN tables ON where_condition									{ $$ = 0; }
+		| tables JOIN tables ON where_condition											{ $$ = 0; }
+		| tables NATURAL JOIN tables														{ $$ = 0; }
+		| tables LEFT OUTER JOIN tables ON where_condition								{ $$ = 0; }
+		| tables RIGHT OUTER JOIN tables ON where_condition								{ $$ = 0; }
+		| tables OUTER JOIN tables ON where_condition									{ $$ = 0; }	
+		| tables LEFT JOIN tables ON where_condition										{ $$ = 0; }
+		| tables RIGHT JOIN tables ON where_condition									{ $$ = 0; }
 		| OPEN_PARENTHESIS tables CLOSE_PARENTHESIS										{ $$ = 0; }
+		| OPEN_PARENTHESIS program CLOSE_PARENTHESIS									{ $$ = 0; }
+		| tables AS VAR																	{ $$ = 0; }
 	;
 
 table: VAR																				{ $$ = 0; }
@@ -223,9 +227,12 @@ where_condition: constant operator constant												{ $$ = 0; }
 			|	constant IS NULL_VAL													{ $$ = 0; }
 			|	constant IS NOT NULL_VAL												{ $$ = 0; }
 			|	constant IN OPEN_PARENTHESIS program CLOSE_PARENTHESIS					{ $$ = 0; }
+			|	constant IN OPEN_PARENTHESIS array CLOSE_PARENTHESIS					{ $$ = 0; }
 			|	constant NOT IN OPEN_PARENTHESIS program CLOSE_PARENTHESIS				{ $$ = 0; }
 			| 	where_condition AND where_condition										{ $$ = 0; }
 			| 	where_condition OR where_condition										{ $$ = 0; }
+			| 	OPEN_PARENTHESIS where_condition CLOSE_PARENTHESIS									{ $$ = 0; }
+			| 	OPEN_PARENTHESIS program CLOSE_PARENTHESIS									{ $$ = 0; }
 	;
 	
 having_condition:column operator constant											{ $$ = 0; }
@@ -249,6 +256,10 @@ having_statement: HAVING having_condition												{ $$ = 0; }
 order_by_statement: ORDERBY columns													{ $$ = 0; }
 				| 																{ $$ = 0; }
 		;
+
+array: array COMMA array																			{ $$ = 0; }
+		| constant																				{ $$ = 0; }
+	; 
 
 
 constant: INTEGER																			{ $$ = 0; }
