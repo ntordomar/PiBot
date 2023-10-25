@@ -112,6 +112,8 @@ typedef struct {
 } Table;
 
 
+
+
 // %type <where_statement> where_statement
 typedef struct {
 	Where_condition * where_condition;
@@ -175,4 +177,16 @@ struct Expression {
 	Expression * rightExpression;
 };
 
+
+typedef struct {
+	Constant left_constant;
+	Constant right_constant;
+	Operator operator;
+	Where_condition * left_where_condition;
+	Where_condition * right_where_condition;
+	Program * program;
+	Array * array;
+	
+
+}Where_condition;
 #endif
