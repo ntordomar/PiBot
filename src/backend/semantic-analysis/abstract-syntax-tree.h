@@ -7,6 +7,15 @@
 * de otras 2 expresiones.
 */
 typedef struct Expression Expression;
+typedef struct Array Array;
+typedef struct Column Column;
+typedef struct Columns Columns;
+typedef struct Where_condition Where_condition;
+typedef struct Tables Tables;
+typedef struct Having_condition Having_condition;
+
+typedef struct Program Program;
+
 
 /**
 * Para cada no-terminal se define una nueva estructura que representa su tipo
@@ -23,156 +32,211 @@ typedef struct Expression Expression;
 * posee según el valor de este enumerado.
 */
 
+//Enums
 
-typedef struct {
-	Select_statement * select_statement;
-	From_statement * from_statement;
-	Where_statement * where_statement;
-	Group_by_statement * group_by_statement;
-	Having_statement * having_statement;
-	Order_by_statement * order_by_statement;
-} Program;
+typedef enum {
+	UNIQUE_COLUMN,
+	AGGREGATION_COLUMN,
+	EXPRESSION_COLUMN,
+	ASSIGNMENT_COLUMN
+} ColumnType;
+
+typedef enum {
+	ADDITION,
+	DIVISION,
+	MULTIPLICATION,
+	SUBSTRACTION,
+} ExpressionType;
+
+typedef enum {
+	SUM_AGG,
+	AVG_AGG,
+	MAX_AGG,
+	MIN_AGG,
+	COUNT_AGG,
+} AggregationType;
+
+typedef enum {
+	MULTIPLE_TABLES,
+	UNIQUE_TABLES,
+	JOIN_ON_TABLES,
+	NATURAL_JOIN_TABLES,
+	PARENTHESIS_TABLES,
+	NESTED_QUERY_TABLES,
+	ASSIGNMENT_TABLES,
+} TablesType;
+
+typedef enum {
+	JOIN_ON,
+	LEFT_OUTER_ON,
+	RIGHT_OUTER_ON,
+	OUTER_ON,
+	LEFT_ON,
+	RIGHT_ON,
+} JoinOnType;
+
+typedef enum {
+	OPERATOR_WHERE,
+	OPERATOR_NESTED_QUERY_WHERE,
+	IS_NULL_WHERE,
+	IS_NOT_NULL_WHERE,
+	IN_NESTED_QUERY_WHERE,
+	IN_ARRAY_WHERE,
+	NOT_IN_NESTED_QUERY_WHERE,
+	NOT_IN_ARRAY_WHERE,
+	LOGICAL_OP_WHERE,
+	PARENTHESIS_WHERE,
+	PARENTHESIS_NESTED_QUERY_WHERE,
+} WhereConditionType;
+
+typedef enum {
+	OPERATOR_HAVING,
+	IS_NULL_HAVING,
+	IS_NOT_NULL_HAVING,
+	IN_NESTED_QUERY_HAVING,
+	NOT_IN_NESTED_QUERY_HAVING,
+	LOGICAL_OP_HAVING,
+	OPERATOR_NESTED_QUERY_HAVING,
+} HavingConditionType;
+
+typedef enum {
+	INTEGER_CONST,
+	APOST_CONST,
+	VAR_CONST,
+	TABLE_COLUMN_CONST,
+	ALL_CONST
+} ConstantType;
+
+typedef enum {
+	GE_OP,
+	GT_OP,
+	LE_OP,
+	LT_OP,
+	NE_OP,
+	EQ_OP,
+} OperatorType;
+
+typedef enum {
+	AND_OP,
+	OR_OP,
+} LogicalOperator;
 
 
-typedef struct {
-	Columns columns;
-}Select_statement;
 // %type <constant> constant
 typedef struct {
-	int rightValue;
-	int leftValue;
+	ConstantType type;
+	int integer;
+	char * firstVar;
+	char * secondVar;
 } Constant;
+
+// %type <table> table
+typedef struct {
+	char * var;
+} Table;
+
+
+// %type <array> array
+struct Array {
+	Array* left_array;
+	Array* right_array;
+	Constant* constant;
+};
+
+// %type <columns> columns
+struct Columns{
+	Column * column;
+	Columns * columns;
+};
+
+// %type <column> column
+struct Column{
+	ColumnType type;
+	Constant* constant;
+	AggregationType aggregation;
+	Column* leftColumn;
+	Column* rightColumn;
+	ExpressionType expression;
+	char * varname;
+};
 
 // %type <select_statement> select_statement
 typedef struct {
 	Columns * columns;
 } Select_statement;
 
-typedef struct {
-	Tables * tables;
-}From_statement;
-
-typedef struct{
-	Table * table;
-	Where_condition * where_condition;
-	Tables * leftTables;
-	Tables * rightTables;
-	Program * program;
-}Tables;
-
-typedef struct {
-	int value;
-} Operator;
-
-
-typedef struct {
-	Columns * columns;
-}Group_by_statement;
-
-
-
-typedef struct {
-	Having_condition * Having_condition;
-}Having_statement;
-
-typedef struct {
-	Columns * columns;
-}Order_by_statement;
-// %type <columns> columns
-typedef struct {
-	Column * column;
-	Columns * columns;
-} Columns;
-
-// %type <column> column
-typedef struct {
-	Constant* constant;
-	Aggregation* aggregation;
-	Column* leftColumn;
-	Column* rightColumn;
-	int token;
-} Column;
-
-// %type <aggregation> aggregation
-typedef struct {
-	int token;
-} Aggregation;
-
-// %type <from_statement> from_statement
-typedef struct {
-	int token;
-} From_statement;
-
-// %type <tables> tables
-
-
-// %type <table> table
-typedef struct {
-	int token;
-} Table;
-
+// %type <where_condition> where_condition
+struct Where_condition {
+	WhereConditionType type;
+	Constant* rightConstant;
+	Constant* leftConstant;
+	OperatorType operator;
+	Program* program;
+	Array* array;
+	Where_condition* leftWhere;
+	Where_condition* rightWhere;
+	LogicalOperator logicalOp;
+};
 
 // %type <where_statement> where_statement
 typedef struct {
 	Where_condition * where_condition;
 } Where_statement;
 
-typedef struct {
-	Constant* constant;
-	Operator* operator;
-	Program* program;
-	Array* array;
-	Where_condition* leftWhere_condition;
-	Where_condition* rightWhere_condition;
-	int token;
-} Were_condition;
+//%type <tables> tables
+struct Tables{
+	TablesType type;
+	JoinOnType joinOnType;
+	Table * table;
+	Where_condition * where_condition;
+	Tables * leftTables;
+	Tables * rightTables;
+	Program * program;
+	char * varname;
+};
 
-// %type <where_condition> where_condition
+//%type <from_statement> from_statement
+typedef struct {
+	Tables * tables;
+} From_statement;
+
 
 // %type <having_statement> having_statement
+typedef struct {
+	Having_condition * Having_condition;
+} Having_statement;
 
 // %type <having_condition> having_condition
-typedef struct {
+struct Having_condition {
+	HavingConditionType type;
 	Column * column;
-	Operator * operator;
+	OperatorType operator;
 	Constant * constant;
 	Program * program;
 	Having_condition * conditionRight;
 	Having_condition * conditionLeft;
-} Having_condition;
+	LogicalOperator logicalOp;
+};
 
 // %type <group_by_statement> group_by_statement
+typedef struct {
+	Columns * columns;
+} Group_by_statement;
+
 // %type <order_by_statement> order_by_statement
-// %type <operator> operator
-// %type <array> array
 typedef struct {
-	
+	Columns * columns;
+} Order_by_statement;
+
+
+struct Program {
+	Select_statement * select_statement;
+	From_statement * from_statement;
+	Where_statement * where_statement;
+	Group_by_statement * group_by_statement;
+	Having_statement * having_statement;
+	Order_by_statement * order_by_statement;
 };
 
-
-
-typedef enum {
-	EXPRESSION,
-	CONSTANT
-} FactorType;
-
-typedef struct {
-	FactorType type;
-	Expression * expression;
-} Factor;
-
-typedef enum {
-	ADDITION,
-	SUBTRACTION,
-	MULTIPLICATION,
-	DIVISION,
-	FACTOR
-} ExpressionType;
-
-struct Expression {
-	ExpressionType type;
-	Expression * leftExpression;
-	Expression * rightExpression;
-};
 
 #endif
