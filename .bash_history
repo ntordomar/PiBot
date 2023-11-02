@@ -393,3 +393,12 @@ chmod 777 *
 ./test.sh
 ./test.sh
 exit
+./script/test.
+./script/test.sh 
+./script/test.sh 
+./script/test.sh 
+./script/test.sh 
+./script/test.sh 
+ls
+./test.sh 
+./script/test.sh 

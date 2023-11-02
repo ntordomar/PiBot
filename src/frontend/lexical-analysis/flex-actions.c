@@ -42,7 +42,7 @@ token CloseParenthesisPatternAction() {
 token IntegerPatternAction(const char * lexeme, const int length) {
 	LogDebug("[Flex] IntegerPatternAction: '%s' (length = %d).", lexeme, length);
 	char * lexemeCopy = copyLexeme(lexeme, length);
-	yylval.integer = atoi(lexemeCopy);
+	yylval.integer = atoi(lexemeCopy); // valor semantico del token 
 	free(lexemeCopy);
 	return INTEGER;
 }
