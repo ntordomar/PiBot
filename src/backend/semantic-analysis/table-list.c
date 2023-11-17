@@ -14,7 +14,7 @@ CharList *initCharList() {
     return list;
 }
 
-bool find(CharList *list, const char *data) {
+bool listFind(CharList *list, const char *data) {
     Node *current = list->head;
     while (current != NULL) {
         if (strcmp(current->data, data) == 0) {
@@ -26,7 +26,7 @@ bool find(CharList *list, const char *data) {
     return false;
 }
 
-void insert(CharList *list, const char *data) {
+void listInsert(CharList *list, const char *data) {
     Node *newNode = (Node *)malloc(sizeof(Node));
     if (!newNode) {
         fprintf(stderr, "Error: No se pudo asignar memoria para el nuevo nodo.\n");
@@ -38,7 +38,7 @@ void insert(CharList *list, const char *data) {
     list->head = newNode;
 }
 
-void delete(CharList *list, const char *data) {
+void listDelete(CharList *list, const char *data) {
     Node *current = list->head;
     Node *prev = NULL;
 

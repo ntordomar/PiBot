@@ -1,49 +1,3 @@
-./run.sh 
-./run.sh 
-./run.sh 
-./run.sh 
-./run.sh 
-./run.sh 
-./run.sh 
-./run.sh 
-./run.sh 
-./run.sh 
-./run.s
-./run.sh ]
-./run.sh ]
-./run.sh ]
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
 ./run.sh
 ./run.sh
 ./run.sh
@@ -497,4 +451,50 @@ clear
 ./program.sh program
 ./program.sh program
 ./test.sh 
+exit
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
 exit

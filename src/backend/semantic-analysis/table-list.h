@@ -13,9 +13,9 @@ typedef struct CharList {
 } CharList;
 
 CharList *initCharList();
-bool find(CharList *list, const char *data);
-void insert(CharList *list, const char *data);
-void delete(CharList *list, const char *data);
+bool listFind(CharList *list, const char *data);
+void listInsert(CharList *list, const char *data);
+void listDelete(CharList *list, const char *data);
 void freeCharList(CharList *list);
 void printList(CharList *list);
 

@@ -28,33 +28,73 @@ void yyerror(const char * string) {
 }
 
 bool checkIsValidReference(Columns * columns) {
-	return true;
-	// if(columns == NULL) return true;
-	// Column * column = columns->column;
-	// // printf("la columna es : %s\n", column->constant->firstVar);
-	// if(column->type == UNIQUE_COLUMN) {
-	// 	if(column->constant->type == TABLE_COLUMN_CONST) {
-			
-	// 		if(column->constant->secondVar != NULL){
-	// 			if(!symbolTableFindTable(column->constant->firstVar)) {
-	// 				return false;
-	// 			}
-	// 		}
-	// 	}
-	// }
-	// return checkIsValidReference(columns->columns); si desconmentas esta tira seg fault!
+	if(columns == NULL) return true;
+	Column * column = columns->column;
+	if(column == NULL) return true;
+	if(column->type == UNIQUE_COLUMN) {
+		if(column->constant->type == TABLE_COLUMN_CONST) {
+			// todo falta chequear que la tabla exista en la lista
+			if(!symbolTableFindTable(column->constant->firstVar)) {
+				printf("ERROR: la columna %s no existe en la tabla %s\n", column->constant->secondVar, column->constant->firstVar);
+				return false;
+			}
+		}
+	}
+	return checkIsValidReference(columns->columns);
+}
+
+bool checkIsWhereConditionValidReference(Where_condition * where) {
+	if(where == NULL) return true;
+	if(where->type == OPERATOR_WHERE) {
+		if(where->leftConstant->type == TABLE_COLUMN_CONST) {
+			if(where->leftConstant->secondVar != NULL){
+				if(!symbolTableFindTable(where->leftConstant->firstVar)) {
+					printf("ERROR: la columna %s no existe en la tabla %s\n", where->leftConstant->secondVar, where->leftConstant->firstVar);
+					return false;
+				}
+			}
+		}
+		if(where->rightConstant->type == TABLE_COLUMN_CONST) {
+			if(where->rightConstant->secondVar != NULL){
+				if(!symbolTableFindTable(where->rightConstant->firstVar)) {
+					printf("ERROR: la columna %s no existe en la tabla %s\n", where->rightConstant->secondVar, where->rightConstant->firstVar);
+					return false;
+				}
+			}
+		}
+	}
+	if(where->type == OPERATOR_NESTED_QUERY_WHERE || where->type == IN_NESTED_QUERY_WHERE || where->type == NOT_IN_NESTED_QUERY_WHERE) {
+		
+	}
+	return checkIsWhereConditionValidReference(where->leftWhere) && checkIsWhereConditionValidReference(where->rightWhere);
 }
 
 void checkValidTableReferences(Program * program) {
 
 	// tengo que chequear las del select, from , where , group by, having, order by
-	if(program->group_by_statement == NULL) return;
+	// if(program->group_by_statement == NULL) return;
 	Columns * columns = program->select_statement->columns;
+	printf("la columna es : %s\n", columns->column->constant->firstVar);
 	if ( checkIsValidReference(columns) == false ){
-		printf("ERROR: la columna %s no existe en la tabla %s\n", columns->column->varname, columns->column->varname);
 		exit(1);
 	} 
 
+	columns = program->group_by_statement->columns;
+	if ( checkIsValidReference(columns) == false ){
+		exit(1);
+	}
+
+	columns = program->order_by_statement->columns;
+
+	if ( checkIsValidReference(columns) == false ){
+			exit(1);
+		}
+
+	Where_condition * where = program->where_statement->where_condition;
+	if( checkIsWhereConditionValidReference(where) == false ){
+		printf("ERROR: la columna %s no existe en la tabla %s\n", columns->column->varname, columns->column->varname);
+		exit(1);
+	} 
 }
 
 /**
@@ -89,15 +129,17 @@ Program * ProgramGrammarAction(Select_statement * select, From_statement * from,
 	program->group_by_statement = groupby;
 	program->having_statement = having;
 	program->order_by_statement = orderby;
-	program = state.program;
+	state.program = program;
 	state.result = value; //todo preguntar
 	printTableList();
+
+	printf("hola soy la columna %s en programa\n", program->select_statement->columns->column->constant->firstVar);
 
 	// the following function checks that every column reference of the type "table.column" is valid
 	checkValidTableReferences(program);
 
 	// the following functoin  checks that every column in the select clause is in the group by clause
-	// checkValidGroupByClause(program);
+	checkValidGroupByClause(program);
 	return program;
 }
 
@@ -116,11 +158,12 @@ Constant * IntegerConstantGrammarAction(int integer) {
 }
 
 Constant * ApostopheConstantGrammarAction(char * var) {
-	return ConstantTreeConstruction(VAR_CONST, 0, var, NULL);
+	return ConstantTreeConstruction(APOST_CONST, 0, var, NULL);
 }
 
 Constant * VarConstantGrammarAction(char * var) {
-	return ConstantTreeConstruction(TABLE_COLUMN_CONST, 0, var, NULL);
+	printf("hola soy constant %s\n", var);
+	return ConstantTreeConstruction(VAR_CONST, 0, var, NULL);
 }
 
 Constant * TableColumnConstantGrammarAction(char * firstVar, char * secondVar) {
@@ -159,6 +202,7 @@ Column * ColumnTreeCreation(ColumnType type, Constant * constant, AggregationTyp
 
 void createSymbolEntry(KeyStruct * key, ValueStruct * val, char * tableName, char * columnName, TypeColumn type) {
 	key->columnName = malloc(strlen(columnName)+1);
+	printf("aaaa\n");
 	strcpy(key->columnName, columnName);
 	val->type = type;
 	if(tableName != NULL) {
@@ -179,12 +223,15 @@ Column * UniqueColumnGrammarAction(Constant * column) {
 	// 	ValueStruct *val;
 
 	// 	if(column->type == TABLE_COLUMN_CONST) {
+	// 		printf("bbbbb\n");
 	// 		createSymbolEntry(key,val, column->firstVar,column->secondVar,UNDEFINED);
 	// 	} else {
+	// 		printf("cccc\n");
 	// 		createSymbolEntry(key,val, column->firstVar,NULL,UNDEFINED);
 	// 	}
 	// 	symbolTableInsert(key, val);
 	// }
+	printf("hola soy la columna en unique column %s\n", column->firstVar);
 
 	return ColumnTreeCreation(UNIQUE_COLUMN, column, SUM_AGG, NULL, NULL, ADDITION, NULL);
 }
@@ -413,10 +460,6 @@ Where_condition * OperatorWhereGrammarAction(Constant * leftConstant, Constant *
 					symbolTableInsert(key, val);
 			}
 		}
-
-
-
-
 	}
 	return WhereTreeCreation(OPERATOR_WHERE, leftConstant, rightConstant, operator, NULL, NULL, NULL, NULL, AND_OP);
 }

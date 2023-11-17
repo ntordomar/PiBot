@@ -90,11 +90,11 @@ void symbolTablePrint(){
 }
 
 void symbolTableInsertTable(char * tableName){
-    insert(tableList, tableName);
+    listInsert(tableList, tableName);
 }
 
 bool symbolTableFindTable(char * tableName){
-    return find(tableList, tableName);
+    return listFind(tableList, tableName);
 }
 
 void symbolTableDestroyTable(){
@@ -102,7 +102,7 @@ void symbolTableDestroyTable(){
 }
 
 void symbolTableDeleteTable(char * tableName){
-    delete(tableList,tableName);
+    listDelete(tableList,tableName);
 }
 
 void printTableList(){
