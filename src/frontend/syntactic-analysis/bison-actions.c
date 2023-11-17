@@ -1,5 +1,6 @@
 #include "../../backend/domain-specific/calculator.h"
 #include "../../backend/semantic-analysis/abstract-syntax-tree.h"
+#include "../../backend/semantic-analysis/symbol_table.h"
 #include "../../backend/support/logger.h"
 #include "bison-actions.h"
 #include <stdio.h>
@@ -13,6 +14,8 @@
 /**
 * Esta función se ejecuta cada vez que se emite un error de sintaxis.
 */
+
+
 void yyerror(const char * string) {
 	LogErrorRaw("[ERROR] Mensaje: '%s', debido a '", string);
 	for (int i = 0; i < yyleng; ++i) {
@@ -36,6 +39,8 @@ Program * ProgramGrammarAction(Select_statement * select, From_statement * from,
 	Program * program = calloc(1, sizeof(Program));
 	int value = 0;
 	LogDebug("[Bison] ProgramGrammarAction(%d)", value);
+
+	
 	/*
 	* "state" es una variable global que almacena el estado del compilador,
 	* cuyo campo "succeed" indica si la compilación fue o no exitosa, la cual
@@ -56,8 +61,20 @@ Program * ProgramGrammarAction(Select_statement * select, From_statement * from,
 	program->group_by_statement = groupby;
 	program->having_statement = having;
 	program->order_by_statement = orderby;
-	program = state.program;
+	state.program = program;
 	state.result = value; //todo preguntar
+	printTableList();
+
+	// the following function checks that every column reference of the type "table.column" is valid
+	checkValidTablesInProgram(program);
+
+	// the following functoin  checks that every column in the select clause is in the group by clause
+	checkValidGroupByClause(program);
+
+	if(errorIndex > 0){
+		printErrors();
+		exit(1);
+	}
 	return program;
 }
 
@@ -76,19 +93,19 @@ Constant * IntegerConstantGrammarAction(int integer) {
 }
 
 Constant * ApostopheConstantGrammarAction(char * var) {
-	return ConstantTreeConstruction(APOST_CONST, NULL, var, NULL);
+	return ConstantTreeConstruction(APOST_CONST, 0, var, NULL);
 }
 
 Constant * VarConstantGrammarAction(char * var) {
-	return ConstantTreeConstruction(VAR_CONST, NULL, var, NULL);
+	return ConstantTreeConstruction(VAR_CONST, 0, var, NULL);
 }
 
 Constant * TableColumnConstantGrammarAction(char * firstVar, char * secondVar) {
-	return ConstantTreeConstruction(TABLE_COLUMN_CONST, NULL, firstVar, secondVar);
+	return ConstantTreeConstruction(TABLE_COLUMN_CONST, 0, firstVar, secondVar);
 }
 
 Constant * AllConstantGrammarAction() {
-	return ConstantTreeConstruction(ALL_CONST, NULL, NULL, NULL);
+	return ConstantTreeConstruction(ALL_CONST, 0, NULL, NULL);
 }
 
 Select_statement * SelectStatementGrammarAction(Columns * columns) {
@@ -113,8 +130,10 @@ Column * ColumnTreeCreation(ColumnType type, Constant * constant, AggregationTyp
 	column->rightColumn = rightCol;
 	column->expression = expression;
 	column->varname = var;
+
 	return column;
 }
+
 
 Column * UniqueColumnGrammarAction(Constant * column) {
 	return ColumnTreeCreation(UNIQUE_COLUMN, column, SUM_AGG, NULL, NULL, ADDITION, NULL);
@@ -210,10 +229,13 @@ Tables * NestedQueryTablesGrammarAction(Program * program) {
 }
 
 Tables * AssignmentTablesGrammarAction(Tables * tables, char * var) {
+	if(!symbolTableFindTable(var)) symbolTableInsertTable(var);
+
 	return TablesTreeCreation(ASSIGNMENT_TABLES, JOIN_ON, NULL, NULL, tables, NULL, NULL, var);
 }
 
 Table * TableGrammarAction(char * var) {
+	if(!symbolTableFindTable(var)) symbolTableInsertTable(var);
 	Table * table = calloc(1, sizeof(Table));
 	table->var = var;
 	return table;
@@ -240,34 +262,43 @@ Where_condition * WhereTreeCreation(WhereConditionType type, Constant * leftCons
 }
 
 Where_condition * OperatorWhereGrammarAction(Constant * leftConstant, Constant * rightConstant, OperatorType operator) {
+	
+	checkColumnsType(leftConstant,rightConstant);
 	return WhereTreeCreation(OPERATOR_WHERE, leftConstant, rightConstant, operator, NULL, NULL, NULL, NULL, AND_OP);
 }
 
 Where_condition * OperatorNestedQueryWhereGrammarAction(Constant * constant, OperatorType operator, Program * program) {
+	checkTableExists(constant);
 	return WhereTreeCreation(OPERATOR_NESTED_QUERY_WHERE, constant, NULL, operator, program, NULL, NULL, NULL, AND_OP);
 }
 
 Where_condition * IsNullWhereGrammarAction(Constant * constant) {
+	checkTableExists(constant);
 	return WhereTreeCreation(IS_NULL_WHERE, constant, NULL, GE_OP, NULL, NULL, NULL, NULL, AND_OP);
 }
 
 Where_condition * IsNotNullWhereGrammarAction(Constant * constant) {
+	checkTableExists(constant);
 	return WhereTreeCreation(IS_NOT_NULL_WHERE, constant, NULL, GE_OP, NULL, NULL, NULL, NULL, AND_OP);
 }
 
 Where_condition * InNestedQueryWhereGrammarAction(Constant * constant, Program * program) {
+	checkTableExists(constant);
 	return WhereTreeCreation(IN_NESTED_QUERY_WHERE, constant, NULL, GE_OP, program, NULL, NULL, NULL, AND_OP);
 }
 
 Where_condition * InArrayWhereGrammarAction(Constant * constant, Array * array) {
+	checkTableExists(constant);
 	return WhereTreeCreation(IN_ARRAY_WHERE, constant, NULL, GE_OP, NULL, array, NULL, NULL, AND_OP);
 }
 
 Where_condition * NotInNestedQueryWhereGrammarAction(Constant * constant, Program * program) {
+	checkTableExists(constant);
 	return WhereTreeCreation(NOT_IN_NESTED_QUERY_WHERE, constant, NULL, GE_OP, program, NULL, NULL, NULL, AND_OP);
 }
 
 Where_condition * NotInArrayWhereGrammarAction(Constant * constant, Array * array) {
+	checkTableExists(constant);
 	return WhereTreeCreation(NOT_IN_ARRAY_WHERE, constant, NULL, GE_OP, NULL, array, NULL, NULL, AND_OP);
 }
 
@@ -290,6 +321,8 @@ Having_statement * HavingStatementGrammarAction(Having_condition * having) {
 }
 
 Having_condition * HavingTreeCreation(HavingConditionType type, Column * column, OperatorType operator, Constant * constant, Program * program, Having_condition * rightHaving, Having_condition * leftHaving, LogicalOperator logicalOp) {
+	
+	checkValidTableReference(column);
 	Having_condition * having = calloc(1, sizeof(Having_condition));
 	having->type = type;
 	having->column = column;
@@ -303,6 +336,8 @@ Having_condition * HavingTreeCreation(HavingConditionType type, Column * column,
 }
 
 Having_condition * OperatorHavingGrammarAction(Column * column, OperatorType operator, Constant * constant) {
+	//copiar lo de where
+	checkTableExists(constant);
 	return HavingTreeCreation(OPERATOR_HAVING, column, operator, constant, NULL, NULL, NULL, AND_OP);
 }
 
