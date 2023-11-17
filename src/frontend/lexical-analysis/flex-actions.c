@@ -49,6 +49,8 @@ token IntegerPatternAction(const char * lexeme, const int length) {
 
 token LetterPatternAction(const char * lexeme, const int length){
 	LogDebug("[Flex] LetterPatternAction '%s' (len = %d).",lexeme,length);
+    char * lexemeCopy = copyLexeme(lexeme, length);
+    yylval.varname = lexemeCopy;
 	return VAR;
 }
 

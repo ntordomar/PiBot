@@ -69,9 +69,9 @@ whitespace		[ \f\n\r\t\v]
 ")"                                         { return CloseParenthesisPatternAction(); }
 "."                                         { return DotPatternAction(); }
 
-"'"                                         { BEGIN(STRING); ApstrophePatternAction(); }
+"'"                                         { BEGIN(STRING);return ApstrophePatternAction(); }
 <STRING>{letter}+                            { return LetterPatternAction(yytext, yyleng); }
-<STRING>"'"                                 { BEGIN(INITIAL); ApstrophePatternAction(); }
+<STRING>"'"                                 { BEGIN(INITIAL); return ApstrophePatternAction(); }
 
 {digit}+									{ return IntegerPatternAction(yytext, yyleng); }
 {letter}+                                   { return LetterPatternAction(yytext, yyleng); }

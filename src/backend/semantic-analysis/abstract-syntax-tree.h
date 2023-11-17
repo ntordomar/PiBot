@@ -100,9 +100,9 @@ typedef enum {
 } HavingConditionType;
 
 typedef enum {
-	INTEGER_CONST,
-	APOST_CONST,
+	INTEGER_CONST = 0,
 	VAR_CONST,
+	APOST_CONST,
 	TABLE_COLUMN_CONST,
 	ALL_CONST
 } ConstantType;

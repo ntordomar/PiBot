@@ -1,5 +1,6 @@
 #include "../../backend/domain-specific/calculator.h"
 #include "../../backend/semantic-analysis/abstract-syntax-tree.h"
+#include "../../backend/semantic-analysis/symbol_table.h"
 #include "../../backend/support/logger.h"
 #include "bison-actions.h"
 #include <stdio.h>
@@ -26,6 +27,36 @@ void yyerror(const char * string) {
 	LogErrorRaw("' (length = %d, linea %d).\n\n", yyleng, yylineno);
 }
 
+bool checkIsValidReference(Columns * columns) {
+	return true;
+	// if(columns == NULL) return true;
+	// Column * column = columns->column;
+	// // printf("la columna es : %s\n", column->constant->firstVar);
+	// if(column->type == UNIQUE_COLUMN) {
+	// 	if(column->constant->type == TABLE_COLUMN_CONST) {
+			
+	// 		if(column->constant->secondVar != NULL){
+	// 			if(!symbolTableFindTable(column->constant->firstVar)) {
+	// 				return false;
+	// 			}
+	// 		}
+	// 	}
+	// }
+	// return checkIsValidReference(columns->columns); si desconmentas esta tira seg fault!
+}
+
+void checkValidTableReferences(Program * program) {
+
+	// tengo que chequear las del select, from , where , group by, having, order by
+	if(program->group_by_statement == NULL) return;
+	Columns * columns = program->select_statement->columns;
+	if ( checkIsValidReference(columns) == false ){
+		printf("ERROR: la columna %s no existe en la tabla %s\n", columns->column->varname, columns->column->varname);
+		exit(1);
+	} 
+
+}
+
 /**
 * Esta acción se corresponde con el no-terminal que representa el símbolo
 * inicial de la gramática, y por ende, es el último en ser ejecutado, lo que
@@ -36,6 +67,8 @@ Program * ProgramGrammarAction(Select_statement * select, From_statement * from,
 	Program * program = calloc(1, sizeof(Program));
 	int value = 0;
 	LogDebug("[Bison] ProgramGrammarAction(%d)", value);
+
+	
 	/*
 	* "state" es una variable global que almacena el estado del compilador,
 	* cuyo campo "succeed" indica si la compilación fue o no exitosa, la cual
@@ -58,6 +91,13 @@ Program * ProgramGrammarAction(Select_statement * select, From_statement * from,
 	program->order_by_statement = orderby;
 	program = state.program;
 	state.result = value; //todo preguntar
+	printTableList();
+
+	// the following function checks that every column reference of the type "table.column" is valid
+	checkValidTableReferences(program);
+
+	// the following functoin  checks that every column in the select clause is in the group by clause
+	// checkValidGroupByClause(program);
 	return program;
 }
 
@@ -76,19 +116,19 @@ Constant * IntegerConstantGrammarAction(int integer) {
 }
 
 Constant * ApostopheConstantGrammarAction(char * var) {
-	return ConstantTreeConstruction(APOST_CONST, NULL, var, NULL);
+	return ConstantTreeConstruction(VAR_CONST, 0, var, NULL);
 }
 
 Constant * VarConstantGrammarAction(char * var) {
-	return ConstantTreeConstruction(VAR_CONST, NULL, var, NULL);
+	return ConstantTreeConstruction(TABLE_COLUMN_CONST, 0, var, NULL);
 }
 
 Constant * TableColumnConstantGrammarAction(char * firstVar, char * secondVar) {
-	return ConstantTreeConstruction(TABLE_COLUMN_CONST, NULL, firstVar, secondVar);
+	return ConstantTreeConstruction(TABLE_COLUMN_CONST, 0, firstVar, secondVar);
 }
 
 Constant * AllConstantGrammarAction() {
-	return ConstantTreeConstruction(ALL_CONST, NULL, NULL, NULL);
+	return ConstantTreeConstruction(ALL_CONST, 0, NULL, NULL);
 }
 
 Select_statement * SelectStatementGrammarAction(Columns * columns) {
@@ -113,10 +153,39 @@ Column * ColumnTreeCreation(ColumnType type, Constant * constant, AggregationTyp
 	column->rightColumn = rightCol;
 	column->expression = expression;
 	column->varname = var;
+
 	return column;
 }
 
+void createSymbolEntry(KeyStruct * key, ValueStruct * val, char * tableName, char * columnName, TypeColumn type) {
+	key->columnName = malloc(strlen(columnName)+1);
+	strcpy(key->columnName, columnName);
+	val->type = type;
+	if(tableName != NULL) {
+		printf("no es null la tabla\n");
+		key->tableName = malloc(strlen(tableName)+1);
+		strcpy(key->tableName, tableName);
+	} else {
+		printf(" es null la tabla\n");
+		key->tableName = NULL;
+	}
+}
+
 Column * UniqueColumnGrammarAction(Constant * column) {
+
+	// if(column->type == VAR_CONST || column->type == TABLE_COLUMN_CONST) {
+
+	// 	KeyStruct *key;
+	// 	ValueStruct *val;
+
+	// 	if(column->type == TABLE_COLUMN_CONST) {
+	// 		createSymbolEntry(key,val, column->firstVar,column->secondVar,UNDEFINED);
+	// 	} else {
+	// 		createSymbolEntry(key,val, column->firstVar,NULL,UNDEFINED);
+	// 	}
+	// 	symbolTableInsert(key, val);
+	// }
+
 	return ColumnTreeCreation(UNIQUE_COLUMN, column, SUM_AGG, NULL, NULL, ADDITION, NULL);
 }
 
@@ -214,6 +283,7 @@ Tables * AssignmentTablesGrammarAction(Tables * tables, char * var) {
 }
 
 Table * TableGrammarAction(char * var) {
+	if(!symbolTableFindTable(var)) symbolTableInsertTable(var);
 	Table * table = calloc(1, sizeof(Table));
 	table->var = var;
 	return table;
@@ -240,6 +310,114 @@ Where_condition * WhereTreeCreation(WhereConditionType type, Constant * leftCons
 }
 
 Where_condition * OperatorWhereGrammarAction(Constant * leftConstant, Constant * rightConstant, OperatorType operator) {
+	if(leftConstant->type == TABLE_COLUMN_CONST || rightConstant->type == TABLE_COLUMN_CONST){
+		
+		// C1 ambas son col
+		if(leftConstant->type == TABLE_COLUMN_CONST && rightConstant->type == TABLE_COLUMN_CONST){
+			KeyStruct *key = malloc(sizeof(KeyStruct));
+			ValueStruct* val = malloc(sizeof(ValueStruct));
+			if(leftConstant->secondVar == NULL)
+				createSymbolEntry(key,val, NULL,leftConstant->firstVar,UNDEFINED);
+			else
+			createSymbolEntry(key,val, leftConstant->firstVar,leftConstant->secondVar,UNDEFINED);
+			EntryStruct * entry1 = symbolTableFind(key,val);
+
+			KeyStruct *key2 = malloc(sizeof(KeyStruct));
+			ValueStruct* val2 = malloc(sizeof(ValueStruct));
+			if(rightConstant->secondVar == NULL)
+				createSymbolEntry(key2,val2, NULL,rightConstant->firstVar,UNDEFINED);
+			else
+				createSymbolEntry(key2,val2, rightConstant->firstVar,rightConstant->secondVar,UNDEFINED);
+			EntryStruct * entry2 = symbolTableFind(key2,val2);
+
+			
+			//c1.1 las dos estan en la tabla de simbolos
+			if(entry1 != NULL && entry2 != NULL){
+				if(entry1->value.type != UNDEFINED && entry2->value.type != UNDEFINED && entry1->value.type != entry2->value.type){
+						//ERROR Y EXIT
+						printf("hola!!!!");
+						printf("ERROR: las columnas %s y %s no son del mismo tipo\n", leftConstant->firstVar, rightConstant->firstVar);
+						exit(1);
+				}else if(entry1->value.type == UNDEFINED && entry2->value.type != UNDEFINED){
+					//c1.1.1 la primera no tiene type asignado
+					symbolTableInsert(key, val2);
+				}else if (entry1->value.type != UNDEFINED && entry2->value.type == UNDEFINED){
+					//c1.1.2 la segunda no tiene type asignado
+					symbolTableInsert(key2, val);
+				}
+			}
+			//c1.2 solo la primera esta en la tabla de simbolos
+			else if(entry1 != NULL){	
+					// agrego a la tabla la segunda columna con el tipo de la priemra
+					symbolTableInsert(key2, val);
+			}
+			//c1.3 solo la segunda esta en la tabla de simbolos
+			else if(entry2 != NULL){
+					// agrego a la tabla la primera columna con el tipo de la segunda
+					symbolTableInsert(key, val2);
+			}
+		}
+		// C2 solo la izq es col
+		else if (leftConstant->type == TABLE_COLUMN_CONST){
+			printf("aca entre una tabla izquerxa\n\n\n\n");
+			KeyStruct *key = malloc(sizeof(KeyStruct));
+			ValueStruct* val = malloc(sizeof(ValueStruct));
+			if(leftConstant->secondVar == NULL){
+				createSymbolEntry(key,val, NULL,leftConstant->firstVar,UNDEFINED);
+			}else{
+				createSymbolEntry(key,val,leftConstant->firstVar,leftConstant->secondVar,UNDEFINED);
+			}
+			EntryStruct * entry = symbolTableFind(key,val);
+			
+			// c2.1 esta en la tabla de simbolos
+			if(entry != NULL && entry->value.type != UNDEFINED && entry->value.type != rightConstant->type){
+					//ERROR Y EXIT
+					printf("ERROR: la columna %s no es del mismo tipo que la constante\n", leftConstant->firstVar);
+					exit(1);
+			}
+			else{
+					printf("el valor de tipo de la constante es %d\n", rightConstant->type);
+					//c2.1.1 no tiene type asignado
+					if(rightConstant->type == INTEGER_CONST){
+						val->type = INTEGER_CONST;
+					}else if(rightConstant->type == VAR_CONST){
+						val->type = VAR_CONST;
+					}
+					// insert en la tabla de simbolos
+					symbolTableInsert(key, val);
+					symbolTablePrint();
+					printf("\n\n\n\n");
+			}
+		}
+
+		// C3 solo la der es col
+		else if (rightConstant->type == TABLE_COLUMN_CONST){
+			printf("aca entre una tabla detecja");
+			KeyStruct *key = malloc(sizeof(KeyStruct));
+			ValueStruct* val = malloc(sizeof(ValueStruct));
+			createSymbolEntry(key,val, rightConstant->firstVar,rightConstant->secondVar,UNDEFINED);
+			EntryStruct * entry = symbolTableFind(key,val);
+			//c2.1 esta en la tabla de simbolos
+			if(entry != NULL && entry->value.type != UNDEFINED && entry->value.type != leftConstant->type){
+					//ERROR Y EXIT
+					printf("ERROR: la columna %s no es del mismo tipo que la constante\n", leftConstant->firstVar);
+					exit(1);
+			}else{
+					//c2.1.1 no tiene type asignado
+					if(leftConstant->type == INTEGER_CONST){
+						entry->value.type = INTEGER_CONST;
+					}else if(leftConstant->type == VAR_CONST){
+						entry->value.type = VAR_CONST;
+					}
+					// insert en la tabla de simbolos
+					symbolTableInsert(key, val);
+			}
+		}
+
+
+
+
+	}
 	return WhereTreeCreation(OPERATOR_WHERE, leftConstant, rightConstant, operator, NULL, NULL, NULL, NULL, AND_OP);
 }
 
