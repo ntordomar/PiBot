@@ -5,6 +5,11 @@
 #include "../semantic-analysis/abstract-syntax-tree.h"
 #include <stdbool.h>
 
+#define MAX_ERRORS 20
+
+static char * errorsName[MAX_ERRORS] = {NULL};
+extern int errorIndex;
+
 // Descriptor del archivo de entrada que utiliza Bison.
 extern FILE * yyin;
 

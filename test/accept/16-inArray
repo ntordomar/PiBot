@@ -1,3 +1,3 @@
 SELECT NOMBRE
 FROM empleados
-WHERE empleado.edad IN ('40', '41', '42')
+WHERE empleados.edad IN ('40', '41', '42')

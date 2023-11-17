@@ -43,7 +43,6 @@ static bool symbolKeyEquals(KeyStruct key1, KeyStruct key2) {
     if(key1.tableName != NULL || key2.tableName != NULL) {
         return false;
     } 
-    printf("estoy comparando %s con %s\n", key1.columnName, key2.columnName);
     return strcmp(key1.columnName, key2.columnName) == 0;
 }
 

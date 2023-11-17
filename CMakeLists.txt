@@ -70,6 +70,7 @@ add_executable(Compiler
 	src/backend/semantic-analysis/hashMap.c
 	src/backend/semantic-analysis/symbol_table.c
 	src/backend/semantic-analysis/table-list.c
+	src/backend/semantic-analysis/semantic-validator.c
 	# Agregar otros archivos *.c (si no se incluyen, no se compilan).
 	# ...
 )

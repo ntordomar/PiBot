@@ -101,8 +101,8 @@ typedef enum {
 
 typedef enum {
 	INTEGER_CONST = 0,
-	VAR_CONST,
 	APOST_CONST,
+	VAR_CONST,
 	TABLE_COLUMN_CONST,
 	ALL_CONST
 } ConstantType;

@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include "table-list.h"
+#include "../support/logger.h"
 
 CharList *initCharList() {
     CharList *list = (CharList *)malloc(sizeof(CharList));
     if (!list) {
-        fprintf(stderr, "Error: No se pudo asignar memoria para la lista de caracteres.\n");
+        LogErrorRaw("Error: No se pudo asignar memoria para la lista de caracteres.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -29,7 +30,7 @@ bool listFind(CharList *list, const char *data) {
 void listInsert(CharList *list, const char *data) {
     Node *newNode = (Node *)malloc(sizeof(Node));
     if (!newNode) {
-        fprintf(stderr, "Error: No se pudo asignar memoria para el nuevo nodo.\n");
+        LogErrorRaw("Error: No se pudo asignar memoria para el nuevo nodo.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -78,7 +79,6 @@ void freeCharList(CharList *list) {
 void printList(CharList *list) {
     Node *current = list->head;
     while (current != NULL) {
-        printf("%s\n", current->data);
         current = current->next;
     }
 }

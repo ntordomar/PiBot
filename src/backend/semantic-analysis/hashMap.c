@@ -12,25 +12,8 @@ static uint64_t hash(HashMap *hm, KeyStruct * key) {
     return hm->prehash(key) % hm->totalSize;
 }
 
-// Función de hash para la clave KeyStruct
-static uint64_t hashKey(KeyStruct key) {
-    // Implementa tu lógica de hash aquí
-    // Puedes usar funciones de hash existentes como DJB2 o FNV-1a
-    return 0;
-}
-
 // Función de comparación de claves para KeyStruct
 static bool keyEquals(KeyStruct key1, KeyStruct key2) {
-
-    // if(key1.tableName == NULL && key2.tableName == NULL) {
-    //     int strcp = strcmp(key1.columnName, key2.columnName);
-    //     printf("strcp: %d\n", strcp);
-    //     return strcp == 0;
-    // }
-
-    // if(key1.tableName == NULL || key2.tableName == NULL) {
-    //     return false;
-    // }
     return 
            strcmp(key1.columnName, key2.columnName) == 0;
 }
@@ -101,8 +84,6 @@ void hashMapInsert(HashMap *hm, KeyStruct *key, ValueStruct *value) {
         resize(hm);
     }
 
-    printf("agregue en la posicion: %d\n", pos);
-
 }
 
 
@@ -137,15 +118,12 @@ EntryStruct *hashMapFind(HashMap *hm, KeyStruct *key, ValueStruct * value) {
     uint64_t firstPosition = hash(hm, key);
     for(uint64_t i = 0; i < hm->totalSize; i++) {
         uint64_t index = (firstPosition + i) % hm->totalSize;
-        printf("index: %d\n", index);
         EntryStruct * aux = &hm->lookupTable[index];
-        printf("aux->status: %d\n", aux->status);
         if(aux->status == EMPTY) return NULL;
         if(aux->status == OCCUPIED && keyEquals(aux->key, *key)) {
             if(value != NULL) {
                 value->type = aux->value.type;
             }
-            printf("estoy retornando que encontra a %s\n CON UN TIPO %d\n", aux->key.columnName,aux->value.type);
             return aux;
         }
     }
