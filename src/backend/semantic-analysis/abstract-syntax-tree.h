@@ -117,7 +117,7 @@ typedef enum {
 } OperatorType;
 
 typedef enum {
-	AND_OP,
+	AND_OP = 0,
 	OR_OP,
 } LogicalOperator;
 
