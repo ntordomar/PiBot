@@ -2,6 +2,7 @@
 #include "../../backend/semantic-analysis/abstract-syntax-tree.h"
 #include "../../backend/semantic-analysis/symbol_table.h"
 #include "../../backend/support/logger.h"
+#include "../../backend/support/memory-manager.h"
 #include "bison-actions.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,7 +37,7 @@ void yyerror(const char * string) {
 * gramática, o lo que es lo mismo, que el programa pertenece al lenguaje.
 */
 Program * ProgramGrammarAction(Select_statement * select, From_statement * from, Where_statement * where, Group_by_statement * groupby, Having_statement * having, Order_by_statement * orderby) {
-	Program * program = calloc(1, sizeof(Program));
+	Program * program = mm_calloc(1, sizeof(Program));
 	int value = 0;
 	LogDebug("[Bison] ProgramGrammarAction(%d)", value);
 
@@ -62,7 +63,7 @@ Program * ProgramGrammarAction(Select_statement * select, From_statement * from,
 	program->having_statement = having;
 	program->order_by_statement = orderby;
 	state.program = program;
-	state.result = value; //todo preguntar
+	state.result = value;
 	printTableList();
 
 	// the following function checks that every column reference of the type "table.column" is valid
@@ -73,6 +74,7 @@ Program * ProgramGrammarAction(Select_statement * select, From_statement * from,
 
 	if(errorIndex > 0){
 		printErrors();
+		mm_freeAll();
 		exit(1);
 	}
 	return program;
@@ -80,7 +82,7 @@ Program * ProgramGrammarAction(Select_statement * select, From_statement * from,
 
 
 Constant * ConstantTreeConstruction(ConstantType type, int integer, char * firstVar, char * secondVar) {
-	Constant * constant = calloc(1, sizeof(Constant));
+	Constant * constant = mm_calloc(1, sizeof(Constant));
 	constant->type = type;
 	constant->integer = integer;
 	constant->firstVar = firstVar;
@@ -109,20 +111,20 @@ Constant * AllConstantGrammarAction() {
 }
 
 Select_statement * SelectStatementGrammarAction(Columns * columns) {
-	Select_statement * selectStatment = calloc(1, sizeof(Select_statement));
+	Select_statement * selectStatment = mm_calloc(1, sizeof(Select_statement));
 	selectStatment->columns = columns;
 	return selectStatment;
 }
 
 Columns * ColumnsGrammarAction(Column * singleCol, Columns * multipleCols) {
-	Columns * columns = calloc(1, sizeof(Columns));
+	Columns * columns = mm_calloc(1, sizeof(Columns));
 	columns->column = singleCol;
 	columns->columns = multipleCols;
 	return columns;
 }
 
 Column * ColumnTreeCreation(ColumnType type, Constant * constant, AggregationType aggregation, Column * leftCol, Column * rightCol, ExpressionType expression, char * var) {
-	Column * column = calloc(1, sizeof(Column));
+	Column * column = mm_calloc(1, sizeof(Column));
 	column->type = type;
 	column->constant = constant;
 	column->aggregation = aggregation;
@@ -166,13 +168,13 @@ Column * AssignmentColumnGrammarAction(Column * column, char * var) {
 
 
 From_statement * FormStatementGrammarAction(Tables * tables) {
-	From_statement * formStatement = calloc(1, sizeof(From_statement));
+	From_statement * formStatement = mm_calloc(1, sizeof(From_statement));
 	formStatement->tables = tables;
 	return formStatement;
 }
 
 Tables * TablesTreeCreation(TablesType type, JoinOnType join, Table * table, Where_condition * where, Tables * leftTables, Tables * rightTables, Program * program, char * var) {
-	Tables * tables = calloc(1, sizeof(Tables));
+	Tables * tables = mm_calloc(1, sizeof(Tables));
 	tables->type = type;
 	tables->joinOnType = join;
 	tables->table = table;
@@ -236,19 +238,19 @@ Tables * AssignmentTablesGrammarAction(Tables * tables, char * var) {
 
 Table * TableGrammarAction(char * var) {
 	if(!symbolTableFindTable(var)) symbolTableInsertTable(var);
-	Table * table = calloc(1, sizeof(Table));
+	Table * table = mm_calloc(1, sizeof(Table));
 	table->var = var;
 	return table;
 }
 
 Where_statement * WhereStatementGrammarAction(Where_condition * where) {
-	Where_statement * whereStatement = calloc(1, sizeof(Where_statement));
+	Where_statement * whereStatement = mm_calloc(1, sizeof(Where_statement));
 	whereStatement->where_condition = where;
 	return whereStatement;
 }
 
 Where_condition * WhereTreeCreation(WhereConditionType type, Constant * leftConstant, Constant * rightConstant, OperatorType operator, Program * program, Array * array, Where_condition * rightWhere, Where_condition * leftWhere, LogicalOperator logicalOp) {
-	Where_condition * whereCondition = calloc(1, sizeof(Where_condition));
+	Where_condition * whereCondition = mm_calloc(1, sizeof(Where_condition));
 	whereCondition->type = type;
 	whereCondition->leftConstant = leftConstant;
 	whereCondition->rightConstant = rightConstant;
@@ -315,7 +317,7 @@ Where_condition * ParenthesisNestedQueryWhereGrammarAction(Program * program) {
 }
 
 Having_statement * HavingStatementGrammarAction(Having_condition * having) {
-	Having_statement * havingStatement = calloc(1, sizeof(Having_statement));
+	Having_statement * havingStatement = mm_calloc(1, sizeof(Having_statement));
 	havingStatement->Having_condition = having;
 	return havingStatement;
 }
@@ -323,7 +325,7 @@ Having_statement * HavingStatementGrammarAction(Having_condition * having) {
 Having_condition * HavingTreeCreation(HavingConditionType type, Column * column, OperatorType operator, Constant * constant, Program * program, Having_condition * rightHaving, Having_condition * leftHaving, LogicalOperator logicalOp) {
 	
 	checkValidTableReference(column);
-	Having_condition * having = calloc(1, sizeof(Having_condition));
+	Having_condition * having = mm_calloc(1, sizeof(Having_condition));
 	having->type = type;
 	having->column = column;
 	having->operator = operator;
@@ -336,7 +338,6 @@ Having_condition * HavingTreeCreation(HavingConditionType type, Column * column,
 }
 
 Having_condition * OperatorHavingGrammarAction(Column * column, OperatorType operator, Constant * constant) {
-	//copiar lo de where
 	checkTableExists(constant);
 	return HavingTreeCreation(OPERATOR_HAVING, column, operator, constant, NULL, NULL, NULL, AND_OP);
 }
@@ -366,19 +367,19 @@ Having_condition * OperatorNestedQueryHavingGrammarAction(Column * column, Opera
 }
 
 Group_by_statement * GroupByGrammarAction(Columns * columns) {
-	Group_by_statement * groupByStatement = calloc(1, sizeof(Group_by_statement));
+	Group_by_statement * groupByStatement = mm_calloc(1, sizeof(Group_by_statement));
 	groupByStatement->columns = columns;
 	return groupByStatement;
 }
 
 Order_by_statement * OrderByGrammarAction(Columns * columns) {
-	Order_by_statement * orderByStatement = calloc(1, sizeof(Order_by_statement));
+	Order_by_statement * orderByStatement = mm_calloc(1, sizeof(Order_by_statement));
 	orderByStatement->columns = columns;
 	return orderByStatement;
 }
 
 Array * ArrayGrammarAction(Array * leftArray, Array * rightArray, Constant * constant) {
-	Array * array = calloc(1, sizeof(Array));
+	Array * array = mm_calloc(1, sizeof(Array));
 	array->left_array = leftArray;
 	array->right_array = rightArray;
 	array->constant = constant;
@@ -420,8 +421,3 @@ int ConstantFactorGrammarAction(const int value) {
 	LogDebug("[Bison] ConstantFactorGrammarAction(%d)", value);
 	return value;
 }
-
-// int IntegerConstantGrammarAction(const int value) {
-// 	LogDebug("[Bison] IntegerConstantGrammarAction(%d)", value);
-// 	return value;
-// }

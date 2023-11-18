@@ -53,6 +53,4 @@ void hashMapInsert(HashMap *hm, KeyStruct *key, ValueStruct *value);
 bool hashMapRemove(HashMap *hm, KeyStruct *key);
 EntryStruct* hashMapFind(HashMap *hm, KeyStruct *key, ValueStruct *value);
 uint64_t hashMapSize(HashMap *hm);
-void hashMapDestroy(HashMap *hm);
-
 #endif // HASHMAP_H

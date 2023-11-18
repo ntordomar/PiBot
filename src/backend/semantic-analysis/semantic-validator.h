@@ -7,6 +7,8 @@
 #include "abstract-syntax-tree.h"
 #include "../support/shared.h"
 
+#define MAX_ERROR_LEN 256
+
 void checkTableExists(Constant * constant);
 void checkValidTableReferences(Columns * columns);
 void checkValidTableReference(Column *column);

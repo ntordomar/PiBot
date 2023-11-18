@@ -1,9 +1,11 @@
 #include "backend/code-generation/generator.h"
 #include "backend/support/logger.h"
+#include "backend/support/memory-manager.h"
 #include "backend/support/shared.h"
 #include "frontend/syntactic-analysis/bison-parser.h"
 #include <stdio.h>
 #include "backend/semantic-analysis/symbol_table.h"
+
 
 // Estado de la aplicación.
 CompilerState state;
@@ -46,7 +48,8 @@ const int main(const int argumentCount, const char ** arguments) {
 		default:
 			LogError("Error desconocido mientras se ejecutaba el analizador Bison (codigo %d).", result);
 	}
-	symbolTableDestroy();
+	
 	LogInfo("Fin.");
+	mm_freeAll();
 	return result;
 }

@@ -1,4 +1,5 @@
 #include "../../backend/support/logger.h"
+#include "../../backend/support/memory-manager.h"
 #include "flex-actions.h"
 #include <stdlib.h>
 #include <string.h>
@@ -20,7 +21,7 @@
  */
 
 char * copyLexeme(const char * lexeme, const int length) {
-	char * lexemeCopy = (char *) calloc(length + 1, sizeof(char));
+	char * lexemeCopy = (char *) mm_calloc(length + 1, sizeof(char));
 	strncpy(lexemeCopy, lexeme, length);
 	return lexemeCopy;
 }
@@ -42,8 +43,7 @@ token CloseParenthesisPatternAction() {
 token IntegerPatternAction(const char * lexeme, const int length) {
 	LogDebug("[Flex] IntegerPatternAction: '%s' (length = %d).", lexeme, length);
 	char * lexemeCopy = copyLexeme(lexeme, length);
-	yylval.integer = atoi(lexemeCopy); // valor semantico del token 
-	free(lexemeCopy);
+	yylval.integer = atoi(lexemeCopy);
 	return INTEGER;
 }
 
@@ -64,7 +64,6 @@ token OpenParenthesisPatternAction() {
 token UnknownPatternAction(const char * lexeme, const int length) {
 	char * lexemeCopy = copyLexeme(lexeme, length);
 	LogDebug("[Flex] UnknownPatternAction: '%s' (length = %d).", lexemeCopy, length);
-	free(lexemeCopy);
 	yylval.token = ERROR;
 	// Al emitir este token, el compilador aborta la ejecución.
 	return ERROR;
@@ -75,7 +74,6 @@ void IgnoredPatternAction(const char * lexeme, const int length) {
 	LogRaw("[DEBUG] [Flex] IgnoredPatternAction: '");
 	LogText(lexemeCopy, length);
 	LogRaw("' (length = %d).\n", length);
-	free(lexemeCopy);
 	// Como no debe hacer nada con el patrón, solo se loguea en consola.
 	// No se emite ningún token.
 }

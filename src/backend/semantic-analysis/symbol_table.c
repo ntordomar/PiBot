@@ -49,10 +49,10 @@ static bool symbolKeyEquals(KeyStruct key1, KeyStruct key2) {
 
 void symbolTableInit() {
     if(symbol_table != NULL) {
-        symbolTableDestroy();
+        return;
     }
     if(tableList != NULL) {
-        symbolTableDestroyTable(tableList);
+        return;
     }
     symbol_table = hashMapInit(symbolHashFunction, symbolKeyEquals);
     tableList = initCharList();
@@ -62,7 +62,6 @@ void symbolTableInit() {
 
 EntryStruct *symbolTableFind(KeyStruct * key, ValueStruct * value){
     if(symbol_table == NULL){
-        //logeo que primero tenes que inicializarla!
         return NULL;
     }
     return hashMapFind(symbol_table, key, value);
@@ -70,14 +69,9 @@ EntryStruct *symbolTableFind(KeyStruct * key, ValueStruct * value){
 
 void symbolTableInsert(KeyStruct * key, ValueStruct * value){
     if(symbol_table == NULL){
-        //logeo que primero tenes que inicializarla!
         return;
     }
     hashMapInsert(symbol_table, key, value);
-}
-
-void symbolTableDestroy(){
-    hashMapDestroy(symbol_table);
 }
 
 void symbolTablePrint(){
@@ -96,9 +90,7 @@ bool symbolTableFindTable(char * tableName){
     return listFind(tableList, tableName);
 }
 
-void symbolTableDestroyTable(){
-    freeCharList(tableList);
-}
+
 
 void symbolTableDeleteTable(char * tableName){
     listDelete(tableList,tableName);

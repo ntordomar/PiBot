@@ -1,18 +1,11 @@
 #include "../support/logger.h"
+#include "../support/memory-manager.h"
 #include "generator.h"
 #include <stdio.h>
 #include <string.h>
-// incluime el del File
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
-
-
-// FALTAN IMPLEMENTAR 4 CASOS:
-// C1: NOT IN NESTED EN WHERE
-// C2: IN NESTED EN WHERE
-// C3: NOT IN NESTED EN HAVING
-// C4: IN NESTED EN HAVING
 
 /**
  * Implementación de "generator.h".
@@ -48,6 +41,7 @@ void Generator(int result) {
 
 	if (latexFile == NULL) {
 		LogErrorRaw("Error: No se pudo abrir el archivo de salida.\n");
+		mm_freeAll();
 		exit(EXIT_FAILURE);
 	}
 
@@ -71,7 +65,6 @@ void Generator(int result) {
 	fprintf(latexFile, "\\usepackage{array}\n");
 	fprintf(latexFile, "\\usepackage{longtable}\n");
 	fprintf(latexFile, "\\usepackage{tabularx}\n");
-	// arrancame el documento aca
 	fprintf(latexFile, "\\begin{document}\n");
 	fprintf(latexFile, "\\title{Informe de la consulta}\n");
 	fprintf(latexFile, "\\author{Grupo 2}\n");
@@ -81,14 +74,11 @@ void Generator(int result) {
 	generateProgram(state.program, latexFile);
 	
 	fprintf(latexFile, "}\n}\n");
-	// terminame el socumento aca 
 	fprintf(latexFile, "\\end{document}\n");
-	//cerra los recutross!
 	fclose(latexFile);
 }
 
 void generateProgram(Program * program, FILE * latexFile){
-	//LLAMAR A LOS STATEMENTS
 	if(program->order_by_statement != NULL && program->order_by_statement->columns != NULL) {
 		fprintf(latexFile,"\\newline");
 		generateOrderBy(program->order_by_statement, latexFile);
@@ -113,15 +103,12 @@ void generateProgram(Program * program, FILE * latexFile){
 		fprintf(latexFile,"\\newline");
 		generateWhere(program->where_statement, latexFile);
 	}
-
-	// fprintf(latexFile,"\\newline");
 	if(program->from_statement != NULL) {
 		generateFrom(program->from_statement, latexFile);
 	}
 }
 
 void generateOrderBy(Order_by_statement* order_by, FILE * latexFile){
-	//generar el codigo para el order by
 	fprintf(latexFile, "$\\tau$_{");
 	printColumns(order_by->columns, latexFile);
 	fprintf(latexFile, "}\n");
@@ -129,7 +116,6 @@ void generateOrderBy(Order_by_statement* order_by, FILE * latexFile){
 
 
 void generateGroupBy(Group_by_statement* group_by, FILE * latexFile){
-	//generar el codigo para el group by
 	fprintf(latexFile, "$\\gamma$_{");
 	printColumns(group_by->columns, latexFile);
 	fprintf(latexFile, "}\n");
@@ -146,7 +132,6 @@ bool hasAllColumns(Columns * columns){
 
 
 void generateSelect(Select_statement *select, FILE * latexFile){
-	//generar el codigo para el select
 	if(!hasAllColumns(select->columns)){
 		fprintf(latexFile, "$\\pi$_{");
 		printColumns(select->columns, latexFile);
@@ -155,7 +140,6 @@ void generateSelect(Select_statement *select, FILE * latexFile){
 }
 
 void generateFrom(From_statement *from, FILE * latexFile){
-	//generar el codigo para el from
 	fprintf(latexFile, "( ");
 	printTables(from->tables, latexFile);
 	fprintf(latexFile, " )\n");
@@ -163,7 +147,6 @@ void generateFrom(From_statement *from, FILE * latexFile){
 
 void generateHaving(Having_statement *having, FILE * latexFile){
 	Having_condition * having_condition = having->Having_condition;
-	//generar el codigo para el having
 	fprintf(latexFile, "$\\sigma$_{");
 	printHavingCondition(having_condition, latexFile);
 	fprintf(latexFile, "}\n");
@@ -171,7 +154,6 @@ void generateHaving(Having_statement *having, FILE * latexFile){
 
 void generateWhere(Where_statement* where, FILE * latexFile){
 	Where_condition * where_condition = where->where_condition;
-	//generar el codigo para el where
 	fprintf(latexFile, "$\\sigma$_{");
 	printWhereCondition(where_condition, latexFile);
 	fprintf(latexFile, "}\n");
@@ -324,7 +306,7 @@ void printTables(Tables * tables, FILE * latexFile){
 
 		case JOIN_ON_TABLES:
 		printTables(tables->leftTables, latexFile);
-		fprintf(latexFile, fromToPrint[tables->joinOnType]); // fixme el array de types
+		fprintf(latexFile, fromToPrint[tables->joinOnType]);
 		printWhereCondition(tables->where_condition, latexFile);
 		fprintf(latexFile, "}");
 		printTables(tables->rightTables, latexFile);
@@ -332,7 +314,7 @@ void printTables(Tables * tables, FILE * latexFile){
 
 		case NATURAL_JOIN_TABLES:
 		printTables(tables->leftTables, latexFile);
-		fprintf(latexFile, "$\\bowtie$"); // fixme el array de types
+		fprintf(latexFile, "$\\bowtie$");
 		printTables(tables->rightTables, latexFile);
 		break;
 
@@ -440,6 +422,5 @@ void printNullValues(Column * column, FILE * latexFile, bool isNULL){
 }
 
 
-//gnerator de codigo para la estructura select_statement
 
 

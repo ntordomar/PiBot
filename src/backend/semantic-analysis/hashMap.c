@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "../support/memory-manager.h"
 
 
 #define INITIAL_SIZE 20
@@ -20,19 +21,19 @@ static bool keyEquals(KeyStruct key1, KeyStruct key2) {
 
 // Inicialización del HashMap
 HashMap* hashMapInit(uint64_t (*prehash)(KeyStruct* key), bool (*keyEquals)(KeyStruct key1, KeyStruct key2)) {
-    HashMap *hm = (HashMap *)malloc(sizeof(HashMap));
+    HashMap *hm = (HashMap *)mm_malloc(sizeof(HashMap));
     hm->totalSize = INITIAL_SIZE;  // Capacidad inicial arbitraria, puedes ajustar según sea necesario
     hm->usedSize = 0;
     hm->threshold = 0.75;  // Factor de carga arbitrario, puedes ajustar según sea necesario
     hm->prehash = prehash;
     hm->keyEquals = keyEquals;
-    hm->lookupTable = (EntryStruct *)malloc(hm->totalSize* sizeof(EntryStruct));
+    hm->lookupTable = (EntryStruct *)mm_malloc(hm->totalSize* sizeof(EntryStruct));
     return hm;
 }
 
 static void resize(HashMap *hm) {
     EntryStruct * prevTable = hm->lookupTable;
-    hm->lookupTable = calloc(hm->totalSize*2, sizeof(EntryStruct));
+    hm->lookupTable = mm_calloc(hm->totalSize*2, sizeof(EntryStruct));
     if(hm->lookupTable == NULL){
         hm->lookupTable = prevTable;
         return;
@@ -45,18 +46,17 @@ static void resize(HashMap *hm) {
             hashMapInsert(hm, &(prevTable[i].key), &(prevTable[i].value));
         }
     }
-    free(prevTable);
 }
 
 // Inserción o actualización en el HashMap
 void hashMapInsert(HashMap *hm, KeyStruct *key, ValueStruct *value) {
      bool removed = hashMapRemove(hm, key);
-    EntryStruct *newEntry = malloc(sizeof(EntryStruct));
+    EntryStruct *newEntry = mm_malloc(sizeof(EntryStruct));
 
-    newEntry->key.columnName = malloc(sizeof(char) * (strlen(key->columnName) + 1));
+    newEntry->key.columnName = mm_malloc(sizeof(char) * (strlen(key->columnName) + 1));
     strcpy(newEntry->key.columnName, key->columnName);
     if(key->tableName != NULL) {
-        newEntry->key.tableName = malloc(sizeof(char) * (strlen(key->tableName) + 1));
+        newEntry->key.tableName = mm_malloc(sizeof(char) * (strlen(key->tableName) + 1));
         strcpy(newEntry->key.tableName, key->tableName);
     }
     newEntry->value.type = value->type;
@@ -135,9 +135,3 @@ uint64_t hashMapSize(HashMap *hm) {
     return hm->usedSize;
 }
 
-// Destrucción del HashMap
-void hashMapDestroy(HashMap *hm) {
-    // Implementa la lógica de destrucción aquí
-    free(hm->lookupTable);
-    free(hm);
-}

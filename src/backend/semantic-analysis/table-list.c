@@ -3,14 +3,10 @@
 #include <string.h>
 #include "table-list.h"
 #include "../support/logger.h"
+#include "../support/memory-manager.h"
 
 CharList *initCharList() {
-    CharList *list = (CharList *)malloc(sizeof(CharList));
-    if (!list) {
-        LogErrorRaw("Error: No se pudo asignar memoria para la lista de caracteres.\n");
-        exit(EXIT_FAILURE);
-    }
-
+    CharList *list = (CharList *)mm_malloc(sizeof(CharList));
     list->head = NULL;
     return list;
 }
@@ -28,12 +24,7 @@ bool listFind(CharList *list, const char *data) {
 }
 
 void listInsert(CharList *list, const char *data) {
-    Node *newNode = (Node *)malloc(sizeof(Node));
-    if (!newNode) {
-        LogErrorRaw("Error: No se pudo asignar memoria para el nuevo nodo.\n");
-        exit(EXIT_FAILURE);
-    }
-
+    Node *newNode = (Node *)mm_malloc(sizeof(Node));
     newNode->data = strdup(data);
     newNode->next = list->head;
     list->head = newNode;
@@ -50,9 +41,6 @@ void listDelete(CharList *list, const char *data) {
             } else {
                 prev->next = current->next;
             }
-
-            free(current->data);
-            free(current);
             return;
         }
 
@@ -62,19 +50,8 @@ void listDelete(CharList *list, const char *data) {
 }
 
 void freeCharList(CharList *list) {
-    Node *current = list->head;
-    while (current != NULL) {
-        Node *temp = current;
-        current = current->next;
-        if (temp->data != NULL) free(temp->data);
-        free(temp);
-    }
-
-    free(list);
 }
 
-
-// haceme una funcion que me imprima la lista
 
 void printList(CharList *list) {
     Node *current = list->head;
