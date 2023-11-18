@@ -8,13 +8,19 @@
 #include <stdint.h>
 
 
+// FALTAN IMPLEMENTAR 4 CASOS:
+// C1: NOT IN NESTED EN WHERE
+// C2: IN NESTED EN WHERE
+// C3: NOT IN NESTED EN HAVING
+// C4: IN NESTED EN HAVING
+
 /**
  * Implementación de "generator.h".
  */
 
 char *aggregationsToPrint[] = {"SUM", "AVG", "MAX", "MIN", "COUNT"};
 char *expressionsToPrint[] = {"+", "/", "*", "-"};
-char *fromToPrint[] = {"$\\times$", "$\\ltimes$", "$\\rtimes$", "$\\bowtie$","$\\ltimes$", "$\\rtimes$"};
+char *fromToPrint[] = {"$\\theta$_{", "$\\ltimes$_{", "$\\rtimes$_{", "$\\bowtie$","$\\ltimes_{$", "$\\rtimes$_{"};
 char *operatorsToPrint[] = {">=", ">", "<=", "<", "<>", "="};
 char *logicalOperatorsToPrint[] = {"AND", "OR"};
 
@@ -26,6 +32,7 @@ void generateGroupBy(Group_by_statement* group_by, FILE * latexFile);
 void printTables(Tables * tables, FILE * latexFile);
 void generateFrom(From_statement* From_statement, FILE * latexFile);
 void generateHaving(Having_statement* Having_statement, FILE * latexFile);
+void generateProgram(Program * program, FILE * latexFile);
 void printNullValues(Column * column, FILE * latexFile, bool isNULL);
 void printConstant(Constant * constant, FILE * latexFile);
 bool hasAllColumns(Columns * columns);
@@ -37,7 +44,6 @@ void printNullValuesConstant(Constant * constant, FILE * latexFile, bool isNULL)
 
 void Generator(int result) {
 	LogInfo("El resultado de la expresion computada es: '%d'.", result);
-	// LogInfo("El programa es: '%s'.", state.program->select_statement->columns->column->constant->firstVar);
 	FILE * latexFile = fopen("output/index.tex", "w");
 
 	if (latexFile == NULL) {
@@ -72,45 +78,46 @@ void Generator(int result) {
 	fprintf(latexFile, "\\maketitle\n");
 	fprintf(latexFile, "\\textbf{\\Large{");
 
-	//LLAMAR A LOS STATEMENTS
-	if(state.program->order_by_statement != NULL && state.program->order_by_statement->columns != NULL) {
-		fprintf(latexFile,"\\newline");
-		generateOrderBy(state.program->order_by_statement, latexFile);
-	}
+	generateProgram(state.program, latexFile);
 	
-	if(state.program->select_statement != NULL) {
-		fprintf(latexFile,"\\newline");
-		generateSelect(state.program->select_statement, latexFile);
-	}
-
-	if(state.program->having_statement != NULL && state.program->having_statement->Having_condition != NULL) {
-		fprintf(latexFile,"\\newline");
-		generateHaving(state.program->having_statement, latexFile);
-	}
-
-	if(state.program->group_by_statement != NULL && state.program->group_by_statement->columns != NULL) {
-		fprintf(latexFile,"\\newline");
-		generateGroupBy(state.program->group_by_statement, latexFile);
-	}
-
-	if(state.program->where_statement != NULL) {
-		fprintf(latexFile,"\\newline");
-		generateWhere(state.program->where_statement, latexFile);
-	}
-
-	// fprintf(latexFile,"\\newline");
-	if(state.program->from_statement != NULL) {
-		generateFrom(state.program->from_statement, latexFile);
-	}
-	
-
-	
-
 	fprintf(latexFile, "}\n}\n");
 	// terminame el socumento aca 
 	fprintf(latexFile, "\\end{document}\n");
 	//cerra los recutross!
 	fclose(latexFile);
+}
+
+void generateProgram(Program * program, FILE * latexFile){
+	//LLAMAR A LOS STATEMENTS
+	if(program->order_by_statement != NULL && program->order_by_statement->columns != NULL) {
+		fprintf(latexFile,"\\newline");
+		generateOrderBy(program->order_by_statement, latexFile);
+	}
+	
+	if(program->select_statement != NULL) {
+		fprintf(latexFile,"\\newline");
+		generateSelect(program->select_statement, latexFile);
+	}
+
+	if(program->having_statement != NULL && program->having_statement->Having_condition != NULL) {
+		fprintf(latexFile,"\\newline");
+		generateHaving(program->having_statement, latexFile);
+	}
+
+	if(program->group_by_statement != NULL && program->group_by_statement->columns != NULL) {
+		fprintf(latexFile,"\\newline");
+		generateGroupBy(program->group_by_statement, latexFile);
+	}
+
+	if(program->where_statement != NULL && program->where_statement->where_condition != NULL) {
+		fprintf(latexFile,"\\newline");
+		generateWhere(program->where_statement, latexFile);
+	}
+
+	// fprintf(latexFile,"\\newline");
+	if(program->from_statement != NULL) {
+		generateFrom(program->from_statement, latexFile);
+	}
 }
 
 void generateOrderBy(Order_by_statement* order_by, FILE * latexFile){
@@ -126,7 +133,6 @@ void generateGroupBy(Group_by_statement* group_by, FILE * latexFile){
 	fprintf(latexFile, "$\\gamma$_{");
 	printColumns(group_by->columns, latexFile);
 	fprintf(latexFile, "}\n");
-
 }
 
 bool hasAllColumns(Columns * columns){
@@ -150,9 +156,9 @@ void generateSelect(Select_statement *select, FILE * latexFile){
 
 void generateFrom(From_statement *from, FILE * latexFile){
 	//generar el codigo para el from
-	fprintf(latexFile, "\\textbf{(");
+	fprintf(latexFile, "( ");
 	printTables(from->tables, latexFile);
-	fprintf(latexFile, ")}\n");
+	fprintf(latexFile, " )\n");
 }
 
 void generateHaving(Having_statement *having, FILE * latexFile){
@@ -173,6 +179,7 @@ void generateWhere(Where_statement* where, FILE * latexFile){
 
 
 void printWhereCondition(Where_condition * where_condition, FILE * latexFile){
+	if(where_condition == NULL) return;
 	switch (where_condition->type)
 	{
 	case OPERATOR_WHERE:
@@ -211,6 +218,18 @@ void printWhereCondition(Where_condition * where_condition, FILE * latexFile){
 		fprintf(latexFile, ")");
 		break;
 
+	case OPERATOR_NESTED_QUERY_WHERE:
+		printConstant(where_condition->leftConstant, latexFile);
+		fprintf(latexFile, "%s", operatorsToPrint[where_condition->operator]);
+		fprintf(latexFile, "(");
+		generateProgram(where_condition->program, latexFile);
+		fprintf(latexFile, ")");
+		break;
+	case PARENTHESIS_NESTED_QUERY_WHERE:
+		fprintf(latexFile, "(");
+		generateProgram(where_condition->program, latexFile);
+		fprintf(latexFile, ")");
+		break;
 	default:
 		break;
 	};
@@ -256,6 +275,17 @@ void printHavingCondition(Having_condition * having_condition, FILE * latexFile)
 		printHavingCondition(having_condition->conditionLeft, latexFile);
 		fprintf(latexFile, "\\ %s \\ ", logicalOperatorsToPrint[having_condition->logicalOp]);
 		printHavingCondition(having_condition->conditionRight, latexFile);
+		break;
+
+	case OPERATOR_NESTED_QUERY_HAVING:
+		printColumn(having_condition->column, latexFile);
+		fprintf(latexFile, "%s", operatorsToPrint[having_condition->operator]);
+		fprintf(latexFile, "(");
+		generateProgram(having_condition->program, latexFile);
+		fprintf(latexFile, ")");
+		break;
+
+
 	default:
 		break;
 	};
@@ -284,7 +314,7 @@ void printTables(Tables * tables, FILE * latexFile){
 	switch (tables->type)
 	{
 	case UNIQUE_TABLES:
-		fprintf(latexFile, "%s", tables->table->var);
+		fprintf(latexFile, " \\ %s \\ ", tables->table->var);
 		break;
 	case MULTIPLE_TABLES:
 		printTables(tables->leftTables, latexFile);
@@ -295,6 +325,8 @@ void printTables(Tables * tables, FILE * latexFile){
 		case JOIN_ON_TABLES:
 		printTables(tables->leftTables, latexFile);
 		fprintf(latexFile, fromToPrint[tables->joinOnType]); // fixme el array de types
+		printWhereCondition(tables->where_condition, latexFile);
+		fprintf(latexFile, "}");
 		printTables(tables->rightTables, latexFile);
 		break;
 
@@ -311,10 +343,16 @@ void printTables(Tables * tables, FILE * latexFile){
 		break;
 
 			case ASSIGNMENT_TABLES:
+		fprintf(latexFile, "\\rho_{");
+		fprintf(latexFile, "%s", tables->varname);
+		fprintf(latexFile, "} \\ ");
 		fprintf(latexFile, "(");
 		printTables(tables->leftTables, latexFile);
-		fprintf(latexFile, ","); // fixme el array de types
-		printTables(tables->rightTables, latexFile);
+		fprintf(latexFile, ")");
+		break;
+		case (NESTED_QUERY_TABLES):
+		fprintf(latexFile, "(");
+		generateProgram(tables->program, latexFile);
 		fprintf(latexFile, ")");
 		break;
 	default:
@@ -356,7 +394,9 @@ void printColumn(Column * column, FILE * latexFile){
 		printColumn(column->rightColumn, latexFile);
 		break;
 	case ASSIGNMENT_COLUMN:
-		//todo
+		printColumn(column->leftColumn, latexFile);
+		fprintf(latexFile, " \\ \\rightarrow \\ ");
+		fprintf(latexFile, "%s", column->varname);
 	default:
 		break;
 	}
