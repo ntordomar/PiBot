@@ -80,11 +80,9 @@ void checkValidTablesInProgram(Program * program) {
 	Columns * columns = program->select_statement->columns;
 	checkValidTableReferences(columns);
 
-
 	columns = program->group_by_statement->columns;
 	checkValidTableReferences(columns);
 	
-
 	columns = program->order_by_statement->columns;
     checkValidTableReferences(columns);
 		

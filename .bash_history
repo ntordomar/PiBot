@@ -1,46 +1,3 @@
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./run.sh
-./program.sh
-chmod 777 *
-./program.sh
-./program.sh
-./test.sh
-./test.sh
-exit
-./script/test.
-./script/test.sh 
-./script/test.sh 
-./script/test.sh 
-./script/test.sh 
-./script/test.sh 
-ls
-./test.sh 
 ./script/test.sh 
 cd riit
 cd root
@@ -497,4 +454,47 @@ clear
 ./program.sh program
 ./program.sh program
 ./test.sh
+exit
+./program prorgam
+./program program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+]clear
+clear
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
 exit
