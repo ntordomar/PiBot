@@ -14,12 +14,15 @@
 
 char *aggregationsToPrint[] = {"SUM", "AVG", "MAX", "MIN", "COUNT"};
 char *expressionsToPrint[] = {"+", "/", "*", "-"};
+char *fromToPrint[] = {"$\\times$", "$\\ltimes$", "$\\rtimes$", "$\\bowtie$","$\\ltimes$", "$\\rtimes$"};
 
 void generateOrderBy(Order_by_statement *order_by, FILE * latexFile);
 void generateSelect(Select_statement *select, FILE * latexFile);
 void printColumns(Columns *columns, FILE * latexFile);
 void printColumn(Column *column, FILE * latexFile);
 void generateGroupBy(Group_by_statement* group_by, FILE * latexFile);
+void printTables(Tables * tables, FILE * latexFile);
+void generateFrom(From_statement* From_statement, FILE * latexFile);
 
 void Generator(int result) {
 	LogInfo("El resultado de la expresion computada es: '%d'.", result);
@@ -72,6 +75,11 @@ void Generator(int result) {
 		generateSelect(state.program->select_statement, latexFile);
 	}
 
+	fprintf(latexFile,"\\newline");
+	if(state.program->from_statement != NULL) {
+		generateFrom(state.program->from_statement, latexFile);
+	}
+
 	fprintf(latexFile, "}\n}\n");
 	// terminame el socumento aca 
 	fprintf(latexFile, "\\end{document}\n");
@@ -111,12 +119,48 @@ void generateFrom(From_statement *from, FILE * latexFile){
 }
 
 void printTables(Tables * tables, FILE * latexFile){
-	Tables * current = tables;
-	// while(current != NULL){
-	// 	printTable(current->table, latexFile);
-	// 	current = current->table;
-	// 	if(current != NULL) fprintf(latexFile, ",");
-	// }
+	if(tables == NULL) return;
+	switch (tables->type)
+	{
+	case UNIQUE_TABLES:
+		fprintf(latexFile, "%s", tables->table->var);
+		break;
+	case MULTIPLE_TABLES:
+		printTables(tables->leftTables, latexFile);
+		fprintf(latexFile, "$\\times$");
+		printTables(tables->rightTables, latexFile);
+		break;
+
+		case JOIN_ON_TABLES:
+		printTables(tables->leftTables, latexFile);
+		fprintf(latexFile, fromToPrint[tables->joinOnType]); // fixme el array de types
+		printTables(tables->rightTables, latexFile);
+		break;
+
+		case NATURAL_JOIN_TABLES:
+		printTables(tables->leftTables, latexFile);
+		fprintf(latexFile, "$\\bowtie$"); // fixme el array de types
+		printTables(tables->rightTables, latexFile);
+		break;
+
+		case PARENTHESIS_TABLES:
+		fprintf(latexFile, "(");
+		printTables(tables->leftTables, latexFile);
+		fprintf(latexFile, ")");
+		break;
+
+			case ASSIGNMENT_TABLES:
+		fprintf(latexFile, "(");
+		printTables(tables->leftTables, latexFile);
+		fprintf(latexFile, ","); // fixme el array de types
+		printTables(tables->rightTables, latexFile);
+		fprintf(latexFile, ")");
+		break;
+	default:
+		break;
+	}
+
+	
 }
 
 

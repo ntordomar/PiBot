@@ -1,14 +1,3 @@
-./script/test.sh 
-cd riit
-cd root
-ls
-./test.sh
-./test.sh
-ls
-cd ..
-ls
-cd root
-ls
 ./test.sh 
 exit
 ls
@@ -495,6 +484,17 @@ clear
 ./program.sh program
 ./program.sh program
 ./program.sh program
+./program.sh program
+./program.sh program
+exit
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+./program.sh program
+exit
 ./program.sh program
 ./program.sh program
 exit
