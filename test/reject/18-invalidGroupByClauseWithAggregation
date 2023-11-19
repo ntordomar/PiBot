@@ -1,0 +1,3 @@
+﻿SELECT id,count(name)
+FROM TEACHER
+GROUP BY name

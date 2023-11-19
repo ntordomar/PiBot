@@ -1,0 +1,3 @@
+﻿SELECT id
+FROM TEACHER
+WHERE  9 = id  and name = id and name = 'pepe'

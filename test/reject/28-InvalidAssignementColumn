@@ -1,0 +1,2 @@
+﻿SELECT teacher.alias
+FROM teacher AS otherTeacher

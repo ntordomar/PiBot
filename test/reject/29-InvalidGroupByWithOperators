@@ -1,0 +1,3 @@
+﻿SELECT id/price
+FROM USERS
+GROUP BY id

@@ -1,0 +1,3 @@
+﻿SELECT count(name),alias
+FROM teacher, users,teaches
+GROUP BY other.alias

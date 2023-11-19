@@ -1,0 +1,3 @@
+SELECT one.something, COUNT(one.bye)
+FROM two AS one
+WHERE other = 32 AND one.someother = 'someother'
