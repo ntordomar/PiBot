@@ -1,4 +1,4 @@
-[![✗](https://img.shields.io/badge/PiBot_License-v0.2.0-blue)]
+![alt text](https://img.shields.io/badge/PiBot_License-v0.2.0-blue)
 
 
 
