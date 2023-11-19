@@ -3,6 +3,6 @@
 #include "../support/shared.h"
 
 
-void Generator(int result);
+void Generator(int result, char * fileName);
 
 #endif

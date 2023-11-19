@@ -35,12 +35,20 @@ void printWhereCondition(Where_condition * where_condition, FILE * latexFile);
 void printInArray(Constant * constant,Array * array, FILE * latexFile);
 void printNullValuesConstant(Constant * constant, FILE * latexFile, bool isNULL);
 
-void Generator(int result) {
-	LogInfo("El resultado de la expresion computada es: '%d'.", result);
-	FILE * latexFile = fopen("output/index.tex", "w");
+void Generator(int result,char * fileName) {
+	
+	FILE * latexFile;
+	if(fileName != NULL){
+		char * path = (char *)mm_malloc(sizeof(char) * (strlen(fileName) + strlen("output/") ) + 1);
+		path = strcpy(path, "output/");
+		path = strcat(path, fileName);
+		latexFile = fopen(path, "w");
+	}else{
+		latexFile = fopen("output.tex", "w");
+	}
+
 
 	if (latexFile == NULL) {
-		LogErrorRaw("Error: No se pudo abrir el archivo de salida.\n");
 		mm_freeAll();
 		exit(EXIT_FAILURE);
 	}
@@ -212,6 +220,23 @@ void printWhereCondition(Where_condition * where_condition, FILE * latexFile){
 		generateProgram(where_condition->program, latexFile);
 		fprintf(latexFile, ")");
 		break;
+
+	case IN_NESTED_QUERY_WHERE:
+	printConstant(where_condition->leftConstant,latexFile);
+		fprintf(latexFile, " \\  IN \\ ");
+		fprintf(latexFile, "(");
+		generateProgram(where_condition->program, latexFile);
+		fprintf(latexFile, ")");
+		break;
+
+	case NOT_IN_NESTED_QUERY_WHERE:
+		printConstant(where_condition->leftConstant,latexFile);
+		fprintf(latexFile, " \\  NOT IN \\ ");
+		fprintf(latexFile, "(");
+		generateProgram(where_condition->program, latexFile);
+		fprintf(latexFile, ")");
+		break;
+
 	default:
 		break;
 	};
@@ -262,6 +287,21 @@ void printHavingCondition(Having_condition * having_condition, FILE * latexFile)
 	case OPERATOR_NESTED_QUERY_HAVING:
 		printColumn(having_condition->column, latexFile);
 		fprintf(latexFile, "%s", operatorsToPrint[having_condition->operator]);
+		fprintf(latexFile, "(");
+		generateProgram(having_condition->program, latexFile);
+		fprintf(latexFile, ")");
+		break;
+
+	case IN_NESTED_QUERY_HAVING:
+		printColumn(having_condition->column, latexFile);
+		fprintf(latexFile, " \\  IN \\ ");
+		fprintf(latexFile, "(");
+		generateProgram(having_condition->program, latexFile);
+		fprintf(latexFile, ")");
+		break;
+	case NOT_IN_NESTED_QUERY_HAVING:
+		printColumn(having_condition->column, latexFile);
+		fprintf(latexFile, " \\  NOT IN \\ ");
 		fprintf(latexFile, "(");
 		generateProgram(having_condition->program, latexFile);
 		fprintf(latexFile, ")");
