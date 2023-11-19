@@ -28,5 +28,5 @@ Si en lugar de trabajar con un entorno _Linux_, se está construyendo el proyect
 
 
 ## Testing
-Para correr los tests parado desde el directorio 'script' ejecutar ./piBot=test.sh
+Para correr los tests parado desde el directorio 'script' ejecutar ./piBot-test.sh
 En caso de querer obtener los .tex de todos los tests aceptados, ejecutar tex-test.sh desde el directorio 'script'
