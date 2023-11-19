@@ -58,7 +58,7 @@
 
 // IDs y tipos de los tokens terminales generados desde Flex.
 %token <token> SUB
-%token <token> AST
+%token <token> ASTERIK
 %token <token> DIV
 %token <token> ADD
 
@@ -77,6 +77,7 @@
 %token <token> IN
 %token <token> GROUPBY
 %token <token> ORDERBY
+%token <token> BY
 %token <token> JOIN
 %token <token> NATURAL
 %token <token> LEFT
@@ -134,7 +135,7 @@
 
 // Reglas de asociatividad y precedencia (menor a mayor)
 %left ADD SUB 
-%left AST DIV
+%left ASTERIK DIV
 %left AND OR
 %left GREATER_EQUAL GREATER_THAN LESS_EQUAL LESS_THAN NOT_EQUAL EQUAL
 %left IN
@@ -177,7 +178,7 @@ column:  	constant[con]										                            { $$ = UniqueColumn
 		|	aggregation[agg] OPEN_PARENTHESIS constant[con] CLOSE_PARENTHESIS				{ $$ = AggregationColumnGrammarAction($agg, $con); }
 		|   column[left] ADD column[right]													{ $$ = AdditionColumnGrammarAction($left, $right); }
 		|   column[left] DIV column[right]													{ $$ = DivisionColumnGrammarAction($left, $right); }
-		|   column[left] AST column[right]													{ $$ = MultiplicationColumnGrammarAction($left, $right); }
+		|   column[left] ASTERIK column[right]													{ $$ = MultiplicationColumnGrammarAction($left, $right); }
 		|   column[left] SUB column[right]													{ $$ = SubstractionColumnGrammarAction($left, $right); }
 		| 	OPEN_PARENTHESIS column[col] CLOSE_PARENTHESIS AS VAR[var]						{ $$ = AssignmentColumnGrammarAction($col, $var); }
 		;
@@ -254,12 +255,12 @@ having_condition:column[col] operator[op] constant[cons]											{ $$ = Operat
 			| 	column[col] operator[op] ALL OPEN_PARENTHESIS program[prog] CLOSE_PARENTHESIS		{ $$ = OperatorNestedQueryHavingGrammarAction($col, $op, $prog); }
 	;
 
-group_by_statement: GROUPBY columns[cols]												{ $$ = GroupByGrammarAction($cols); }
+group_by_statement: GROUPBY BY columns[cols]												{ $$ = GroupByGrammarAction($cols); }
 				| 																		{ $$ = GroupByGrammarAction(NULL); }
 		;
 
 
-order_by_statement: ORDERBY columns[cols]												{ $$ = OrderByGrammarAction($cols); }
+order_by_statement: ORDERBY BY columns[cols]												{ $$ = OrderByGrammarAction($cols); }
 				| 																		{ $$ = OrderByGrammarAction(NULL); }
 		;
 
@@ -272,7 +273,7 @@ constant: INTEGER[integer]																{ $$ = IntegerConstantGrammarAction($i
 		| APOSTROPHE VAR[var] APOSTROPHE												{ $$ = ApostopheConstantGrammarAction($var); }
 		| VAR[var]																		{ $$ = VarConstantGrammarAction($var); }
 		| VAR[first] DOT VAR[second]													{ $$ = TableColumnConstantGrammarAction($first, $second); }
-		| AST																			{ $$ = AllConstantGrammarAction(); }	
+		| ASTERIK																			{ $$ = AllConstantGrammarAction(); }	
 	;
 
 %%

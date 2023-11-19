@@ -71,9 +71,9 @@ token UnknownPatternAction(const char * lexeme, const int length) {
 
 void IgnoredPatternAction(const char * lexeme, const int length) {
 	char * lexemeCopy = copyLexeme(lexeme, length);
-	LogRaw("[DEBUG] [Flex] IgnoredPatternAction: '");
+	LogDebug("[DEBUG] [Flex] IgnoredPatternAction: '");
 	LogText(lexemeCopy, length);
-	LogRaw("' (length = %d).\n", length);
+	LogDebug("' (length = %d).\n", length);
 	// Como no debe hacer nada con el patrón, solo se loguea en consola.
 	// No se emite ningún token.
 }
@@ -151,15 +151,21 @@ token InPatternAction() {
 }
 
 token GroupPatternAction() {
-    LogDebug("[Flex] GroupPatternAction: 'GROUP BY'.");
+    LogDebug("[Flex] GroupPatternAction: 'GROUP'.");
     yylval.token = GROUPBY;
     return GROUPBY;
 }
 
 token OrderPatternAction() {
-    LogDebug("[Flex] OrderPatternAction: 'ORDER BY'.");
+    LogDebug("[Flex] OrderPatternAction: 'ORDER'.");
     yylval.token = ORDERBY;
     return ORDERBY;
+}
+
+token ByPatternAction() {
+    LogDebug("[Flex] OrderPatternAction: 'BY'.");
+    yylval.token = BY;
+    return BY;
 }
 
 token JoinPatternAction() {
@@ -261,8 +267,8 @@ token EqualPatternAction(){
 
 token AsteriskPatternAction(){
     LogDebug("[Flex] MulPatternAction: '*'.");
-    yylval.token = AST;
-    return AST;
+    yylval.token = ASTERIK;
+    return ASTERIK;
 }
 
 token DivPatternAction(){

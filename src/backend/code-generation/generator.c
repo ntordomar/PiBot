@@ -6,6 +6,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 
 /**
  * Implementación de "generator.h".
@@ -13,7 +17,7 @@
 
 char *aggregationsToPrint[] = {"SUM", "AVG", "MAX", "MIN", "COUNT"};
 char *expressionsToPrint[] = {"+", "/", "*", "-"};
-char *fromToPrint[] = {"$\\theta$_{", "$\\ltimes$_{", "$\\rtimes$_{", "$\\bowtie$","$\\ltimes_{$", "$\\rtimes$_{"};
+char *fromToPrint[] = {"$\\theta$_{", "$\\ltimes$_{", "$\\rtimes$_{", "$\\bowtie$_{","$\\ltimes$_{", "$\\rtimes$_{"};
 char *operatorsToPrint[] = {">=", ">", "<=", "<", "<>", "="};
 char *logicalOperatorsToPrint[] = {"AND", "OR"};
 
@@ -35,16 +39,21 @@ void printWhereCondition(Where_condition * where_condition, FILE * latexFile);
 void printInArray(Constant * constant,Array * array, FILE * latexFile);
 void printNullValuesConstant(Constant * constant, FILE * latexFile, bool isNULL);
 
-void Generator(int result,char * fileName) {
+void Generator(int result,const char * fileName) {
 	
 	FILE * latexFile;
+	struct stat st = {0};
+
+	if (stat("output", &st) == -1) {
+   		mkdir("output", 0700);	
+	}
 	if(fileName != NULL){
 		char * path = (char *)mm_malloc(sizeof(char) * (strlen(fileName) + strlen("output/") ) + 1);
 		path = strcpy(path, "output/");
 		path = strcat(path, fileName);
 		latexFile = fopen(path, "w");
 	}else{
-		latexFile = fopen("output.tex", "w");
+		latexFile = fopen("output/output.tex", "w");
 	}
 
 

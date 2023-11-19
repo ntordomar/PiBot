@@ -1,3 +1,6 @@
+[![✗](https://img.shields.io/badge/PiBot_License-v0.2.0-blue)]
+
+
 
 # Compilador Flex/Bison
 
@@ -20,9 +23,10 @@ Si en lugar de trabajar con un entorno _Linux_, se está construyendo el proyect
 
 ## Ejecución
 - Dentro del archivo program ubicado en la root del proyecto escribir la consulta que se desee compilar
-- Ejecute ./program.sh
+- Ingresar al directorio 'script', y ejecutar program.sh
+- dentro de la carpeta output encontraras un archivo output.tex, el cual contendra el algebra relacional de la consulta
 
 
 ## Testing
-Para correr los tests parado desde la root del proyecto ejecutar test.sh
-
+Para correr los tests parado desde el directorio 'script' ejecutar ./piBot=test.sh
+En caso de querer obtener los .tex de todos los tests aceptados, ejecutar tex-test.sh desde el directorio 'script'

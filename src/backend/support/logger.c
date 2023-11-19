@@ -13,12 +13,12 @@ void Log(FILE * const stream, const char * prefix, const char * const format, co
 }
 
 void LogDebug(const char * const format, ...) {
-	#ifdef DEBUG
+	if(DEBUG == true){
 	va_list arguments;
 	va_start(arguments, format);
 	Log(stdout, "[DEBUG] ", format, "\n", arguments);
 	va_end(arguments);
-	#endif
+	}
 }
 
 void LogError(const char * const format, ...) {
@@ -50,6 +50,9 @@ void LogRaw(const char * const format, ...) {
 }
 
 void LogText(const char * text, const int length) {
+	if(DEBUG == false){
+		return;
+	}
 	for (int i = 0; i < length; ++i) {
 		switch (text[i]) {
 			case '\0':

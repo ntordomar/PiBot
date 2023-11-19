@@ -46,8 +46,9 @@ whitespace		[ \f\n\r\t\v]
 "OR"                                        { return OrPatternAction(); }
 "NOT"                                       { return NotPatternAction(); }
 "IN"                                        { return InPatternAction(); }
-"GROUP BY"                                  { return GroupPatternAction(); }
-"ORDER BY"                                  { return OrderPatternAction(); }
+"GROUP"                                     { return GroupPatternAction(); }
+"ORDER"                                     { return OrderPatternAction(); }
+"BY"                                        { return ByPatternAction(); }
 "JOIN"                                      { return JoinPatternAction(); }
 "NATURAL"                                   { return NaturalPatternAction(); }
 "LEFT"                                      { return LeftPatternAction(); }

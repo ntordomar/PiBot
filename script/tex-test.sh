@@ -1,5 +1,11 @@
 #! /bin/bash
 
+cd ../bin
+make clean
+make all
+cd ../script
+
+
 set -e
 ROOT="$(dirname "$0")"
 
