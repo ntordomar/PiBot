@@ -18,7 +18,7 @@
 char *aggregationsToPrint[] = {"SUM", "AVG", "MAX", "MIN", "COUNT"};
 char *expressionsToPrint[] = {"+", "/", "*", "-"};
 char *fromToPrint[] = {"$\\theta$_{", "$\\ltimes$_{", "$\\rtimes$_{", "$\\bowtie$_{","$\\ltimes$_{", "$\\rtimes$_{"};
-char *operatorsToPrint[] = {"\\geq", "\\text{$>$}", "\\leq", "\\text{$<$}", "\\text{$<>$}", "="};
+char *operatorsToPrint[] = {"\\geq", ">", "\\leq", "<", "<>", "="};
 char *logicalOperatorsToPrint[] = {"AND", "OR"};
 
 void Generator(int result,const char * fileName) {
@@ -187,9 +187,9 @@ void generateSelect(Select_statement *select, FILE * latexFile){
 }
 
 void generateFrom(From_statement *from, FILE * latexFile){
-	fprintf(latexFile, "\\textbf{( ");
+	fprintf(latexFile, "\\textbf{(");
 	printTables(from->tables, latexFile);
-	fprintf(latexFile, " )}\n");
+	fprintf(latexFile, ")}\n");
 }
 
 void generateHaving(Having_statement *having, FILE * latexFile){
@@ -213,7 +213,7 @@ void printWhereCondition(Where_condition * where_condition, FILE * latexFile){
 	{
 	case OPERATOR_WHERE:
 		printConstant(where_condition->leftConstant, latexFile);
-		fprintf(latexFile, "%s", operatorsToPrint[where_condition->operator]);
+		fprintf(latexFile, " %s ", operatorsToPrint[where_condition->operator]);
 		printConstant(where_condition->rightConstant, latexFile);
 		break;
 
@@ -227,7 +227,7 @@ void printWhereCondition(Where_condition * where_condition, FILE * latexFile){
 
 	case LOGICAL_OP_WHERE:
 		printWhereCondition(where_condition->leftWhere, latexFile);
-		fprintf(latexFile, "\\ %s \\ ", logicalOperatorsToPrint[where_condition->logicalOp]);
+		fprintf(latexFile, "\\ %s\\ ", logicalOperatorsToPrint[where_condition->logicalOp]);
 		printWhereCondition(where_condition->rightWhere, latexFile);
 		break;
 
@@ -236,7 +236,7 @@ void printWhereCondition(Where_condition * where_condition, FILE * latexFile){
 		break;
 
 	case NOT_IN_ARRAY_WHERE:
-		fprintf(latexFile, "NOT(");
+		fprintf(latexFile, "\\text{NOT} (");
 		printInArray(where_condition->leftConstant,where_condition->array, latexFile);
 		fprintf(latexFile, ")");
 		break;
@@ -262,7 +262,7 @@ void printWhereCondition(Where_condition * where_condition, FILE * latexFile){
 
 	case IN_NESTED_QUERY_WHERE:
 	printConstant(where_condition->leftConstant,latexFile);
-		fprintf(latexFile, " \\ IN \\ ");
+		fprintf(latexFile, "\\ \\text{IN}\\ ");
 		fprintf(latexFile, "(");
 		generateProgram(where_condition->program, latexFile);
 		fprintf(latexFile, ")");
@@ -270,7 +270,7 @@ void printWhereCondition(Where_condition * where_condition, FILE * latexFile){
 
 	case NOT_IN_NESTED_QUERY_WHERE:
 		printConstant(where_condition->leftConstant,latexFile);
-		fprintf(latexFile, " \\ NOT IN \\ ");
+		fprintf(latexFile, "\\ \\text{NOT IN}\\ ");
 		fprintf(latexFile, "(");
 		generateProgram(where_condition->program, latexFile);
 		fprintf(latexFile, ")");
@@ -293,7 +293,7 @@ void printInArray(Constant * constant,Array * array, FILE * latexFile){
 		printConstant(array->constant, latexFile);
 	}
 	if(array->right_array != NULL){
-		fprintf(latexFile, "\\ OR \\ ");
+		fprintf(latexFile, "\\ OR\\ ");
 		printInArray(constant,array->right_array, latexFile);
 	}
 	
@@ -333,14 +333,14 @@ void printHavingCondition(Having_condition * having_condition, FILE * latexFile)
 
 	case IN_NESTED_QUERY_HAVING:
 		printColumn(having_condition->column, latexFile);
-		fprintf(latexFile, " \\  IN \\ ");
+		fprintf(latexFile, "\\ IN\\ ");
 		fprintf(latexFile, "(");
 		generateProgram(having_condition->program, latexFile);
 		fprintf(latexFile, ")");
 		break;
 	case NOT_IN_NESTED_QUERY_HAVING:
 		printColumn(having_condition->column, latexFile);
-		fprintf(latexFile, " \\  NOT IN \\ ");
+		fprintf(latexFile, "\\ NOT IN\\ ");
 		fprintf(latexFile, "(");
 		generateProgram(having_condition->program, latexFile);
 		fprintf(latexFile, ")");
@@ -357,13 +357,13 @@ void printNullValuesConstant(Constant * constant, FILE * latexFile, bool isNULL)
 	
 	if(isNULL){
 		printConstant(constant, latexFile);
-		fprintf(latexFile, " = NULL ");
+		fprintf(latexFile, " = NULL");
 	}
 	else{
-		fprintf(latexFile, "NOT ( ");
+		fprintf(latexFile, "NOT (");
 		printConstant(constant, latexFile);
-		fprintf(latexFile, " = NULL ");
-		fprintf(latexFile, " ) ");
+		fprintf(latexFile, " = NULL");
+		fprintf(latexFile, ")");
 	}
 
 }
@@ -375,7 +375,7 @@ void printTables(Tables * tables, FILE * latexFile){
 	switch (tables->type)
 	{
 	case UNIQUE_TABLES:
-		fprintf(latexFile, " \\ %s \\ ", tables->table->var);
+		fprintf(latexFile, "%s", tables->table->var);
 		break;
 	case MULTIPLE_TABLES:
 		printTables(tables->leftTables, latexFile);
