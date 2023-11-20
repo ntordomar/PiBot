@@ -76,13 +76,16 @@ void Generator(int result,const char * fileName) {
 	fprintf(latexFile, "\\begin{flushleft}\n");
 	fprintf(latexFile, "\\doublespacing\n");
 	fprintf(latexFile, "{\\fontsize{14}{12}\\selectfont\n");
-	fprintf(latexFile, "\\textbf{\\huge{Algebra Relacional}}\\newline \\\\\n");
+	fprintf(latexFile, "\\textbf{\\huge{Relational Algebra}}\\newline \\\\\n");
 
 	generateProgram(state.program, latexFile);
 	
 	fprintf(latexFile, "}\n");
 	fprintf(latexFile, "\\end{flushleft}\n");
-	fprintf(latexFile, "\\vfill\n\\begin{center}\n\\parbox{\\linewidth}{\\raggedright PiBot License v0.2.0\\hfill Copyright © 2023 PiBot}\n\\end{center}\n");
+	fprintf(latexFile, "\\vfill\n");
+	fprintf(latexFile, "Why did the relational algebra expression break up with the automaton? Because it couldn't handle its non-deterministic behavior and wanted a more SELECTive relationship!\n");
+	fprintf(latexFile, "\\\\ \\\\ \\\\ \n");
+	fprintf(latexFile, "\\begin{center}\n\\parbox{\\linewidth}{\\raggedright PiBot License v0.2.0\\hfill Copyright © 2023 PiBot}\n\\end{center}\n");
 	fprintf(latexFile, "\\end{landscape}\n");
 	fprintf(latexFile, "\\end{document}\n");
 	fclose(latexFile);
@@ -91,49 +94,47 @@ void Generator(int result,const char * fileName) {
 void generateProgram(Program * program, FILE * latexFile){
 	float x = 0.5;
 
-	if(state.program->order_by_statement != NULL && state.program->order_by_statement->columns != NULL) {
-		generateOrderBy(state.program->order_by_statement, latexFile);
-		if(hasSelect(state.program->select_statement) || hasHaving(state.program->having_statement) || hasGroupBy(state.program->group_by_statement) || hasWhere(state.program->where_statement)) {
-			printf("entro al if\n");
+	if(program->order_by_statement != NULL && program->order_by_statement->columns != NULL) {
+		generateOrderBy(program->order_by_statement, latexFile);
+		if(program == state.program && (hasSelect(program->select_statement) || hasHaving(program->having_statement) || hasGroupBy(program->group_by_statement) || hasWhere(program->where_statement))) {
 			fprintf(latexFile,"\\\\\n");
 			fprintf(latexFile,"\\hspace{%.1fem}", x);
 			x++;
 		}
 	}
 	
-	if(state.program->select_statement != NULL) {
-		generateSelect(state.program->select_statement, latexFile);
-		if(hasSelect(state.program->select_statement) && (hasHaving(state.program->having_statement) || hasGroupBy(state.program->group_by_statement) || hasWhere(state.program->where_statement))) {
-			printf("entro al if 2\n");
+	if(program->select_statement != NULL) {
+		generateSelect(program->select_statement, latexFile);
+		if(hasSelect(program->select_statement) && program == state.program && (hasHaving(program->having_statement) || hasGroupBy(program->group_by_statement) || hasWhere(program->where_statement))) {
 			fprintf(latexFile,"\\\\\n");
 			fprintf(latexFile,"\\hspace{%.1fem}", x);
 			x++;
 		}
 	}
-	if(state.program->having_statement != NULL && state.program->having_statement->Having_condition != NULL) {
-		generateHaving(state.program->having_statement, latexFile);
-		if(hasGroupBy(state.program->group_by_statement) || hasWhere(state.program->where_statement)) {
-			fprintf(latexFile,"\\\\\n");
-			fprintf(latexFile,"\\hspace{%.1fem}", x);
-			x++;
-		}
-	}
-
-	if(state.program->group_by_statement != NULL && state.program->group_by_statement->columns != NULL) {
-		generateGroupBy(state.program->group_by_statement, latexFile);
-		if(hasWhere(state.program->where_statement)) {
+	if(program->having_statement != NULL && program->having_statement->Having_condition != NULL) {
+		generateHaving(program->having_statement, latexFile);
+		if(program == state.program && (hasGroupBy(program->group_by_statement) || hasWhere(program->where_statement))) {
 			fprintf(latexFile,"\\\\\n");
 			fprintf(latexFile,"\\hspace{%.1fem}", x);
 			x++;
 		}
 	}
 
-	if(state.program->where_statement != NULL) {
-		generateWhere(state.program->where_statement, latexFile);
+	if(program->group_by_statement != NULL && program->group_by_statement->columns != NULL) {
+		generateGroupBy(program->group_by_statement, latexFile);
+		if(program == state.program && hasWhere(program->where_statement)) {
+			fprintf(latexFile,"\\\\\n");
+			fprintf(latexFile,"\\hspace{%.1fem}", x);
+			x++;
+		}
 	}
 
-	if(state.program->from_statement != NULL) {
-		generateFrom(state.program->from_statement, latexFile);
+	if(program->where_statement != NULL && program->where_statement->where_condition != NULL) {
+		generateWhere(program->where_statement, latexFile);
+	}
+
+	if(program->from_statement != NULL) {
+		generateFrom(program->from_statement, latexFile);
 	}
 
 }
@@ -427,7 +428,6 @@ void printTables(Tables * tables, FILE * latexFile){
 
 void printColumns(Columns * columns, FILE * latexFile){
 	Columns * current = columns;
-	if(current == NULL) printf("esto es joda?");
 	while(current != NULL){
 		printColumn(current->column, latexFile);
 		current = current->columns;

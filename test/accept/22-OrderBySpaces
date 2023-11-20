@@ -1,1 +1,1 @@
-SELECT id FROM users GROUP                     BY id
+SELECT id FROM users ORDER                     BY id

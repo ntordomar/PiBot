@@ -1,6 +1,5 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
-\usepackage[utf8]{inputenc}
 \usepackage[spanish]{babel}
 \usepackage{graphicx}
 \usepackage{float}
@@ -18,13 +17,33 @@
 \usepackage{array}
 \usepackage{longtable}
 \usepackage{tabularx}
+\usepackage{pdflscape}
+\usepackage{fancyhdr}
+\date{}
+\usepackage[margin=1in]{geometry}
+\usepackage{varwidth}
+\usepackage{setspace}
+\newcommand{\multiline}[1]{\begin{varwidth}{\linewidth}$\displaystyle #1$\end{varwidth}}
 \begin{document}
-\title{Informe de la consulta}
-\author{Grupo 2}
-\maketitle
-\textbf{\Large{\newline$\pi$_{column1,column2}
-\newline$\sigma$_{column3=42}
-(  \ table1 \  )
+\begin{landscape}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\begin{flushleft}
+\doublespacing
+{\fontsize{14}{12}\selectfont
+\textbf{\huge{Relational Algebra}}\newline \\
+$\pi_{\text{column1},\text{column2}}$
+\\
+\hspace{0.5em}\fontsize{14}{12}\selectfont$\sigma_{\fontsize{10}{5}\multiline{\text{column3} = 42}}$
+\textbf{(table1)}
 }
-}
+\end{flushleft}
+\vfill
+Why did the relational algebra expression break up with the automaton? Because it couldn't handle its non-deterministic behavior and wanted a more SELECTive relationship!
+\\ \\ \\ 
+\begin{center}
+\parbox{\linewidth}{\raggedright PiBot License v0.2.0\hfill Copyright © 2023 PiBot}
+\end{center}
+\end{landscape}
 \end{document}
