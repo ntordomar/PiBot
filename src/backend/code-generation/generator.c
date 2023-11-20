@@ -18,26 +18,8 @@
 char *aggregationsToPrint[] = {"SUM", "AVG", "MAX", "MIN", "COUNT"};
 char *expressionsToPrint[] = {"+", "/", "*", "-"};
 char *fromToPrint[] = {"$\\theta$_{", "$\\ltimes$_{", "$\\rtimes$_{", "$\\bowtie$_{","$\\ltimes$_{", "$\\rtimes$_{"};
-char *operatorsToPrint[] = {">=", ">", "<=", "<", "<>", "="};
+char *operatorsToPrint[] = {"\\geq", "\\text{$>$}", "\\leq", "\\text{$<$}", "\\text{$<>$}", "="};
 char *logicalOperatorsToPrint[] = {"AND", "OR"};
-
-void generateOrderBy(Order_by_statement *order_by, FILE * latexFile);
-void generateSelect(Select_statement *select, FILE * latexFile);
-void printColumns(Columns *columns, FILE * latexFile);
-void printColumn(Column *column, FILE * latexFile);
-void generateGroupBy(Group_by_statement* group_by, FILE * latexFile);
-void printTables(Tables * tables, FILE * latexFile);
-void generateFrom(From_statement* From_statement, FILE * latexFile);
-void generateHaving(Having_statement* Having_statement, FILE * latexFile);
-void generateProgram(Program * program, FILE * latexFile);
-void printNullValues(Column * column, FILE * latexFile, bool isNULL);
-void printConstant(Constant * constant, FILE * latexFile);
-bool hasAllColumns(Columns * columns);
-void printHavingCondition(Having_condition * having_condition, FILE * latexFile);
-void generateWhere(Where_statement* where, FILE * latexFile);
-void printWhereCondition(Where_condition * where_condition, FILE * latexFile);
-void printInArray(Constant * constant,Array * array, FILE * latexFile);
-void printNullValuesConstant(Constant * constant, FILE * latexFile, bool isNULL);
 
 void Generator(int result,const char * fileName) {
 	
@@ -64,7 +46,6 @@ void Generator(int result,const char * fileName) {
 
 	fprintf(latexFile, "\\documentclass{article}\n");
 	fprintf(latexFile, "\\usepackage[utf8]{inputenc}\n");
-	fprintf(latexFile, "\\usepackage[utf8]{inputenc}\n");
 	fprintf(latexFile, "\\usepackage[spanish]{babel}\n");
 	fprintf(latexFile, "\\usepackage{graphicx}\n");
 	fprintf(latexFile, "\\usepackage{float}\n");
@@ -82,60 +63,109 @@ void Generator(int result,const char * fileName) {
 	fprintf(latexFile, "\\usepackage{array}\n");
 	fprintf(latexFile, "\\usepackage{longtable}\n");
 	fprintf(latexFile, "\\usepackage{tabularx}\n");
+	fprintf(latexFile, "\\usepackage{pdflscape}\n");
+	fprintf(latexFile, "\\usepackage{fancyhdr}\n");
+	fprintf(latexFile, "\\date{}\n");
+	fprintf(latexFile, "\\usepackage[margin=1in]{geometry}\n");
+	fprintf(latexFile, "\\usepackage{varwidth}\n");
+	fprintf(latexFile, "\\usepackage{setspace}\n");
+	fprintf(latexFile, "\\newcommand{\\multiline}[1]{\\begin{varwidth}{\\linewidth}$\\displaystyle #1$\\end{varwidth}}\n");
 	fprintf(latexFile, "\\begin{document}\n");
-	fprintf(latexFile, "\\title{Informe de la consulta}\n");
-	fprintf(latexFile, "\\author{Grupo 2}\n");
-	fprintf(latexFile, "\\maketitle\n");
-	fprintf(latexFile, "\\textbf{\\Large{");
+	fprintf(latexFile, "\\begin{landscape}\n");
+	fprintf(latexFile, "\\pagestyle{fancy}\n\\fancyhf{}\n\\renewcommand{\\headrulewidth}{0pt}\n");
+	fprintf(latexFile, "\\begin{flushleft}\n");
+	fprintf(latexFile, "\\doublespacing\n");
+	fprintf(latexFile, "{\\fontsize{14}{12}\\selectfont\n");
+	fprintf(latexFile, "\\textbf{\\huge{Algebra Relacional}}\\newline \\\\\n");
 
 	generateProgram(state.program, latexFile);
 	
-	fprintf(latexFile, "}\n}\n");
+	fprintf(latexFile, "}\n");
+	fprintf(latexFile, "\\end{flushleft}\n");
+	fprintf(latexFile, "\\vfill\n\\begin{center}\n\\parbox{\\linewidth}{\\raggedright PiBot License v0.2.0\\hfill Copyright © 2023 PiBot}\n\\end{center}\n");
+	fprintf(latexFile, "\\end{landscape}\n");
 	fprintf(latexFile, "\\end{document}\n");
 	fclose(latexFile);
 }
 
 void generateProgram(Program * program, FILE * latexFile){
-	if(program->order_by_statement != NULL && program->order_by_statement->columns != NULL) {
-		fprintf(latexFile,"\\newline");
-		generateOrderBy(program->order_by_statement, latexFile);
+	float x = 0.5;
+
+	if(state.program->order_by_statement != NULL && state.program->order_by_statement->columns != NULL) {
+		generateOrderBy(state.program->order_by_statement, latexFile);
+		if(hasSelect(state.program->select_statement) || hasHaving(state.program->having_statement) || hasGroupBy(state.program->group_by_statement) || hasWhere(state.program->where_statement)) {
+			printf("entro al if\n");
+			fprintf(latexFile,"\\\\\n");
+			fprintf(latexFile,"\\hspace{%.1fem}", x);
+			x++;
+		}
 	}
 	
-	if(program->select_statement != NULL) {
-		fprintf(latexFile,"\\newline");
-		generateSelect(program->select_statement, latexFile);
+	if(state.program->select_statement != NULL) {
+		generateSelect(state.program->select_statement, latexFile);
+		if(hasSelect(state.program->select_statement) && (hasHaving(state.program->having_statement) || hasGroupBy(state.program->group_by_statement) || hasWhere(state.program->where_statement))) {
+			printf("entro al if 2\n");
+			fprintf(latexFile,"\\\\\n");
+			fprintf(latexFile,"\\hspace{%.1fem}", x);
+			x++;
+		}
+	}
+	if(state.program->having_statement != NULL && state.program->having_statement->Having_condition != NULL) {
+		generateHaving(state.program->having_statement, latexFile);
+		if(hasGroupBy(state.program->group_by_statement) || hasWhere(state.program->where_statement)) {
+			fprintf(latexFile,"\\\\\n");
+			fprintf(latexFile,"\\hspace{%.1fem}", x);
+			x++;
+		}
 	}
 
-	if(program->having_statement != NULL && program->having_statement->Having_condition != NULL) {
-		fprintf(latexFile,"\\newline");
-		generateHaving(program->having_statement, latexFile);
+	if(state.program->group_by_statement != NULL && state.program->group_by_statement->columns != NULL) {
+		generateGroupBy(state.program->group_by_statement, latexFile);
+		if(hasWhere(state.program->where_statement)) {
+			fprintf(latexFile,"\\\\\n");
+			fprintf(latexFile,"\\hspace{%.1fem}", x);
+			x++;
+		}
 	}
 
-	if(program->group_by_statement != NULL && program->group_by_statement->columns != NULL) {
-		fprintf(latexFile,"\\newline");
-		generateGroupBy(program->group_by_statement, latexFile);
+	if(state.program->where_statement != NULL) {
+		generateWhere(state.program->where_statement, latexFile);
 	}
 
-	if(program->where_statement != NULL && program->where_statement->where_condition != NULL) {
-		fprintf(latexFile,"\\newline");
-		generateWhere(program->where_statement, latexFile);
+	if(state.program->from_statement != NULL) {
+		generateFrom(state.program->from_statement, latexFile);
 	}
-	if(program->from_statement != NULL) {
-		generateFrom(program->from_statement, latexFile);
-	}
+
+}
+
+
+bool hasSelect(Select_statement *select){
+	return select != NULL && !(hasAllColumns(select->columns));
+}
+
+bool hasHaving(Having_statement *having){
+	return having != NULL && having->Having_condition != NULL;
+}
+
+bool hasGroupBy(Group_by_statement *group_by){
+	return group_by != NULL && group_by->columns != NULL;
+}
+
+bool hasWhere(Where_statement *where){
+	return where != NULL && where->where_condition != NULL;
 }
 
 void generateOrderBy(Order_by_statement* order_by, FILE * latexFile){
-	fprintf(latexFile, "$\\tau$_{");
+	fprintf(latexFile, "$\\tau_{");
 	printColumns(order_by->columns, latexFile);
-	fprintf(latexFile, "}\n");
+	fprintf(latexFile, "}$\n");
 }
 
 
 void generateGroupBy(Group_by_statement* group_by, FILE * latexFile){
-	fprintf(latexFile, "$\\gamma$_{");
+	fprintf(latexFile, "$\\gamma_{");
 	printColumns(group_by->columns, latexFile);
-	fprintf(latexFile, "}\n");
+	fprintf(latexFile, "}$\n");
 }
 
 bool hasAllColumns(Columns * columns){
@@ -150,30 +180,30 @@ bool hasAllColumns(Columns * columns){
 
 void generateSelect(Select_statement *select, FILE * latexFile){
 	if(!hasAllColumns(select->columns)){
-		fprintf(latexFile, "$\\pi$_{");
+		fprintf(latexFile, "$\\pi_{");
 		printColumns(select->columns, latexFile);
-		fprintf(latexFile, "}\n");
+		fprintf(latexFile, "}$\n");
 	}
 }
 
 void generateFrom(From_statement *from, FILE * latexFile){
-	fprintf(latexFile, "( ");
+	fprintf(latexFile, "\\textbf{( ");
 	printTables(from->tables, latexFile);
-	fprintf(latexFile, " )\n");
+	fprintf(latexFile, " )}\n");
 }
 
 void generateHaving(Having_statement *having, FILE * latexFile){
 	Having_condition * having_condition = having->Having_condition;
-	fprintf(latexFile, "$\\sigma$_{");
+	fprintf(latexFile, "$\\sigma_{");
 	printHavingCondition(having_condition, latexFile);
-	fprintf(latexFile, "}\n");
+	fprintf(latexFile, "}$\n");
 }
 
 void generateWhere(Where_statement* where, FILE * latexFile){
 	Where_condition * where_condition = where->where_condition;
-	fprintf(latexFile, "$\\sigma$_{");
+	fprintf(latexFile, "\\fontsize{14}{12}\\selectfont$\\sigma_{\\fontsize{10}{5}\\multiline{");
 	printWhereCondition(where_condition, latexFile);
-	fprintf(latexFile, "}\n");
+	fprintf(latexFile, "}}$\n");
 }
 
 
@@ -232,7 +262,7 @@ void printWhereCondition(Where_condition * where_condition, FILE * latexFile){
 
 	case IN_NESTED_QUERY_WHERE:
 	printConstant(where_condition->leftConstant,latexFile);
-		fprintf(latexFile, " \\  IN \\ ");
+		fprintf(latexFile, " \\ IN \\ ");
 		fprintf(latexFile, "(");
 		generateProgram(where_condition->program, latexFile);
 		fprintf(latexFile, ")");
@@ -240,7 +270,7 @@ void printWhereCondition(Where_condition * where_condition, FILE * latexFile){
 
 	case NOT_IN_NESTED_QUERY_WHERE:
 		printConstant(where_condition->leftConstant,latexFile);
-		fprintf(latexFile, " \\  NOT IN \\ ");
+		fprintf(latexFile, " \\ NOT IN \\ ");
 		fprintf(latexFile, "(");
 		generateProgram(where_condition->program, latexFile);
 		fprintf(latexFile, ")");
@@ -441,13 +471,13 @@ void printConstant(Constant * constant, FILE * latexFile){
 		fprintf(latexFile, "%d", constant->integer);
 		break;
 	case APOST_CONST:
-		fprintf(latexFile, "\"%s\"", constant->firstVar);
+		fprintf(latexFile, "\\text{''%s''}", constant->firstVar);
 		break;
 	case VAR_CONST:
-		fprintf(latexFile, "%s", constant->firstVar);
+		fprintf(latexFile, "\\text{%s}", constant->firstVar);
 		break;
 	case TABLE_COLUMN_CONST:
-		fprintf(latexFile, "%s.%s", constant->firstVar, constant->secondVar);
+		fprintf(latexFile, "\\text{%s.%s}", constant->firstVar, constant->secondVar);
 		break;
 	default:
 		break;
