@@ -7,44 +7,49 @@
 // Tipos de dato utilizados en las variables semánticas ($$, $1, $2, etc.).
 %union {
 	// No-terminales (backend).
-	/*
-	Program program;
-	Expression expression;
-	Factor factor;
-	Constant constant;
-	...
-	*/
+	Program * program;
+	Constant * constant;
+	Select_statement * select_statement;
+	Columns * columns;
+	Column * column;
+	AggregationType aggregation;
+	From_statement * from_statement;
+	Tables * tables;
+	Table * table;
+	Where_statement * where_statement;
+	Where_condition * where_condition;
+	Having_statement * having_statement;
+	Having_condition * having_condition;
+	Group_by_statement * group_by_statement;
+	Order_by_statement * order_by_statement;
+	OperatorType operator;
+	Array * array;
 
 	// No-terminales (frontend).
-	int program;
-	int select_statement;
-	int columns;
-	int column;
-	int aggregation;
-	int from_statement;
-	int tables;
-	int table;
-	int where_statement;
-	int where_condition;
-	int having_statement;
-	int having_condition;
-	int group_by_statement;
-	int order_by_statement;
-	int constant;
-	int operator;
-	int array;
-    // int table_list;
-	// int condition;
-	
-	// int select_columns;
-	// int table_name;
+//	int program;
+//	int constant;
+//	int select_statement;
+//	int columns;
+//	int column;
+//	int aggregation;
+//	int from_statement;
+//	int tables;
+//	int table;
+//	int where_statement;
+//	int where_condition;
+//	int having_statement;
+//	int having_condition;
+//	int group_by_statement;
+//	int order_by_statement;
+//	int operator;
+//	int array;
 	
 
 
 	// Terminales.
 	token token;
 	int integer;
-
+	char * varname;
 
 }
 
@@ -53,7 +58,7 @@
 
 // IDs y tipos de los tokens terminales generados desde Flex.
 %token <token> SUB
-%token <token> AST
+%token <token> ASTERIK
 %token <token> DIV
 %token <token> ADD
 
@@ -72,6 +77,7 @@
 %token <token> IN
 %token <token> GROUPBY
 %token <token> ORDERBY
+%token <token> BY
 %token <token> JOIN
 %token <token> NATURAL
 %token <token> LEFT
@@ -87,7 +93,7 @@
 %token <token> IS
 %token <token> AS
 %token <token> COMMA
-%token <token> VAR
+%token <varname> VAR
 %token <token> EQUAL
 %token <token> APOSTROPHE
 %token <token> DOT
@@ -129,7 +135,7 @@
 
 // Reglas de asociatividad y precedencia (menor a mayor)
 %left ADD SUB 
-%left AST DIV
+%left ASTERIK DIV
 %left AND OR
 %left GREATER_EQUAL GREATER_THAN LESS_EQUAL LESS_THAN NOT_EQUAL EQUAL
 %left IN
@@ -157,116 +163,117 @@
 
 %%
 
-program: select_statement from_statement where_statement group_by_statement having_statement order_by_statement				{ $$ = ProgramGrammarAction($1); }
+program: select_statement[select] from_statement[from] where_statement[where] group_by_statement[groupby] having_statement[having] order_by_statement[orderby]	{ $$ = ProgramGrammarAction($select, $from, $where, $groupby, $having, $orderby); }
 		;															
 	
-	
 
-select_statement: SELECT columns 														{ $$ = 0; }
+select_statement: SELECT columns[cols] 														{ $$ = SelectStatementGrammarAction($cols); }
 		; 
 
-columns:	column COMMA columns														{ $$ = 0; }
-		   | column 																	{ $$ = 0; }
+columns: column[col] COMMA columns[cols]													{ $$ = ColumnsGrammarAction($col, $cols); }
+		| column[col] 																		{ $$ = ColumnsGrammarAction($col, NULL); }
 	;
 
-column:  	constant										                            { $$ = 0; }					
-		|	aggregation OPEN_PARENTHESIS constant CLOSE_PARENTHESIS						{ $$ = 0; }
-		|   column ADD column														{ $$ = 0; }
-		|   column DIV column														{ $$ = 0; }
-		|   column AST column														{ $$ = 0; }
-		|   column SUB column														{ $$ = 0; }
-		| 	OPEN_PARENTHESIS column CLOSE_PARENTHESIS AS VAR							{ $$ = 0; }
+column:  	constant[con]										                            { $$ = UniqueColumnGrammarAction($con); }					
+		|	aggregation[agg] OPEN_PARENTHESIS constant[con] CLOSE_PARENTHESIS				{ $$ = AggregationColumnGrammarAction($agg, $con); }
+		|   column[left] ADD column[right]													{ $$ = AdditionColumnGrammarAction($left, $right); }
+		|   column[left] DIV column[right]													{ $$ = DivisionColumnGrammarAction($left, $right); }
+		|   column[left] ASTERIK column[right]													{ $$ = MultiplicationColumnGrammarAction($left, $right); }
+		|   column[left] SUB column[right]													{ $$ = SubstractionColumnGrammarAction($left, $right); }
+		| 	OPEN_PARENTHESIS column[col] CLOSE_PARENTHESIS AS VAR[var]						{ $$ = AssignmentColumnGrammarAction($col, $var); }
 		;
 
 		
-aggregation: 	SUM																		{ $$ = 0; }
-				|AVG																	{ $$ = 0; }
-				|MAX																	{ $$ = 0; }
-				|MIN																	{ $$ = 0; }
-				|COUNT																	{ $$ = 0; }
+aggregation: 	SUM																			{ $$ = SUM_AGG; }
+				|AVG																		{ $$ = AVG_AGG; }
+				|MAX																		{ $$ = MAX_AGG; }
+				|MIN																		{ $$ = MIN_AGG; }
+				|COUNT																		{ $$ = COUNT_AGG; }
 	;
 
 
 
 
-from_statement: FROM tables																{ $$ = 0; }
+from_statement: FROM tables[tbls]																{ $$ = FormStatementGrammarAction($tbls); }
 		;
 
-tables: table COMMA tables																{ $$ = 0; }
-		| table																			{ $$ = 0; }
-		| tables JOIN tables ON where_condition											{ $$ = 0; }
-		| tables NATURAL JOIN tables														{ $$ = 0; }
-		| tables LEFT OUTER JOIN tables ON where_condition								{ $$ = 0; }
-		| tables RIGHT OUTER JOIN tables ON where_condition								{ $$ = 0; }
-		| tables OUTER JOIN tables ON where_condition									{ $$ = 0; }	
-		| tables LEFT JOIN tables ON where_condition										{ $$ = 0; }
-		| tables RIGHT JOIN tables ON where_condition									{ $$ = 0; }
-		| OPEN_PARENTHESIS tables CLOSE_PARENTHESIS										{ $$ = 0; }
-		| OPEN_PARENTHESIS program CLOSE_PARENTHESIS									{ $$ = 0; }
-		| tables AS VAR																	{ $$ = 0; }
+tables: tables[left] COMMA tables[right]														{ $$ = MultipleTablesGrammarAction($left, $right); }
+		| table[tbl]																			{ $$ = UniqueTablesGrammarAction($tbl); }
+		| tables[left] JOIN tables[right] ON where_condition[where]								{ $$ = JoinOnGrammarAction($left, $right, $where); }
+		| tables[left] NATURAL JOIN tables[right]												{ $$ = NaturalJoinGrammarAction($left, $right); }
+		| tables[left] LEFT OUTER JOIN tables[right] ON where_condition[where]					{ $$ = LeftOuterJoinOnGrammarAction($left, $right, $where); }
+		| tables[left] RIGHT OUTER JOIN tables[right] ON where_condition[where]					{ $$ = RightOuterJoinOnGrammarAction($left, $right, $where); }
+		| tables[left] OUTER JOIN tables[right] ON where_condition[where]						{ $$ = OuterJoinOnGrammarAction($left, $right, $where); }	
+		| tables[left] LEFT JOIN tables[right] ON where_condition[where]						{ $$ = LeftOnGrammarAction($left, $right, $where); }
+		| tables[left] RIGHT JOIN tables[right] ON where_condition[where]						{ $$ = RightOnGrammarAction($left, $right, $where); }
+		| OPEN_PARENTHESIS tables[tbls] CLOSE_PARENTHESIS										{ $$ = ParenthesisTablesGrammarAction($tbls); }
+		| OPEN_PARENTHESIS program[prog] CLOSE_PARENTHESIS										{ $$ = NestedQueryTablesGrammarAction($prog); }
+		| tables[tbls] AS VAR[var]																{ $$ = AssignmentTablesGrammarAction($tbls, $var); }
 	;
 
-table: VAR																				{ $$ = 0; }
+table: VAR[var]																					{ $$ = TableGrammarAction($var); }
 	;
 
 
-where_statement: WHERE where_condition													{ $$ = 0; }
-				|																{ $$ = 0; }
+where_statement: WHERE where_condition[cond]													{ $$ = WhereStatementGrammarAction($cond); }
+				|																				{ $$ = WhereStatementGrammarAction(NULL); }
 		;
 
-operator: GREATER_EQUAL																	{ $$ = 0; }
-		| GREATER_THAN																	{ $$ = 0; }
-		| LESS_EQUAL																	{ $$ = 0; }
-		| LESS_THAN																		{ $$ = 0; }
-		| NOT_EQUAL																		{ $$ = 0; }
-		| EQUAL																			{ $$ = 0; }	
+where_condition: constant[left] operator[op] constant[right]										{ $$ = OperatorWhereGrammarAction($left, $right, $op); }
+			| 	constant[con] operator[op] ALL OPEN_PARENTHESIS program[prog] CLOSE_PARENTHESIS		{ $$ = OperatorNestedQueryWhereGrammarAction($con, $op, $prog); }
+			|	constant[con] IS NULL_VAL															{ $$ = IsNullWhereGrammarAction($con); }
+			|	constant[con] IS NOT NULL_VAL														{ $$ = IsNotNullWhereGrammarAction($con); }
+			|	constant[con] IN OPEN_PARENTHESIS program[prog] CLOSE_PARENTHESIS					{ $$ = InNestedQueryWhereGrammarAction($con, $prog); }
+			|	constant[con] IN OPEN_PARENTHESIS array[arr] CLOSE_PARENTHESIS						{ $$ = InArrayWhereGrammarAction($con, $arr); }
+			|	constant[con] NOT IN OPEN_PARENTHESIS program[prog] CLOSE_PARENTHESIS				{ $$ = NotInNestedQueryWhereGrammarAction($con, $prog); }
+			|	constant[con] NOT IN OPEN_PARENTHESIS array[arr] CLOSE_PARENTHESIS					{ $$ = NotInArrayWhereGrammarAction($con, $arr); }
+			| 	where_condition[left] AND where_condition[right]									{ $$ = LogicalOperatorWhereGrammarAction($left, $right, AND_OP); }
+			| 	where_condition[left] OR where_condition[right]										{ $$ = LogicalOperatorWhereGrammarAction($left, $right, OR_OP); }
+			| 	OPEN_PARENTHESIS where_condition[where] CLOSE_PARENTHESIS							{ $$ = ParenthesisWhereGrammarAction($where); }
+			| 	OPEN_PARENTHESIS program[prog] CLOSE_PARENTHESIS									{ $$ = ParenthesisNestedQueryWhereGrammarAction($prog); }
 	;
 
-where_condition: constant operator constant												{ $$ = 0; }
-			| 	constant operator ALL OPEN_PARENTHESIS program CLOSE_PARENTHESIS		{ $$ = 0; }
-			|	constant IS NULL_VAL													{ $$ = 0; }
-			|	constant IS NOT NULL_VAL												{ $$ = 0; }
-			|	constant IN OPEN_PARENTHESIS program CLOSE_PARENTHESIS					{ $$ = 0; }
-			|	constant IN OPEN_PARENTHESIS array CLOSE_PARENTHESIS					{ $$ = 0; }
-			|	constant NOT IN OPEN_PARENTHESIS program CLOSE_PARENTHESIS				{ $$ = 0; }
-			| 	where_condition AND where_condition										{ $$ = 0; }
-			| 	where_condition OR where_condition										{ $$ = 0; }
-			| 	OPEN_PARENTHESIS where_condition CLOSE_PARENTHESIS									{ $$ = 0; }
-			| 	OPEN_PARENTHESIS program CLOSE_PARENTHESIS									{ $$ = 0; }
+operator: GREATER_EQUAL																	{ $$ = GE_OP; }
+		| GREATER_THAN																	{ $$ = GT_OP; }
+		| LESS_EQUAL																	{ $$ = LE_OP; }
+		| LESS_THAN																		{ $$ = LT_OP; }
+		| NOT_EQUAL																		{ $$ = NE_OP; }
+		| EQUAL																			{ $$ = EQ_OP; }	
 	;
 	
-having_condition:column operator constant											{ $$ = 0; }
-			|	column IS NULL_VAL														{ $$ = 0; }
-			|	column IS NOT NULL_VAL													{ $$ = 0; }
-			|	column IN OPEN_PARENTHESIS program CLOSE_PARENTHESIS			{ $$ = 0; }
-			|	column NOT IN OPEN_PARENTHESIS program CLOSE_PARENTHESIS		{ $$ = 0; }
-			| 	having_condition AND having_condition									{ $$ = 0; }
-			| 	having_condition OR having_condition									{ $$ = 0; }
-			| 	column operator ALL OPEN_PARENTHESIS program CLOSE_PARENTHESIS		{ $$ = 0; }
+having_statement: HAVING having_condition[cond]											{ $$ = HavingStatementGrammarAction($cond); }
+				| 																		{ $$ = HavingStatementGrammarAction(NULL); }
+		;
+	
+having_condition:column[col] operator[op] constant[cons]											{ $$ = OperatorHavingGrammarAction($col, $op, $cons); }
+			|	column[col] IS NULL_VAL																{ $$ = IsNullHavingGrammarAction($col); }
+			|	column[col] IS NOT NULL_VAL															{ $$ = IsNotNullHavingGrammarAction($col); }
+			|	column[col] IN OPEN_PARENTHESIS program[prog] CLOSE_PARENTHESIS						{ $$ = InNestedQueryHavingGrammarAction($col, $prog); }
+			|	column[col] NOT IN OPEN_PARENTHESIS program[prog] CLOSE_PARENTHESIS					{ $$ = NotInNestedQueryHavingGrammarAction($col, $prog); }
+			| 	having_condition[left] AND having_condition[right]									{ $$ = LogicalOperatorHavingGrammarAction($right, $left, AND_OP); }
+			| 	having_condition[left] OR having_condition[right]									{ $$ = LogicalOperatorHavingGrammarAction($right, $left, OR_OP); }
+			| 	column[col] operator[op] ALL OPEN_PARENTHESIS program[prog] CLOSE_PARENTHESIS		{ $$ = OperatorNestedQueryHavingGrammarAction($col, $op, $prog); }
 	;
 
-group_by_statement: GROUPBY columns													{ $$ = 0; }
-				| 																{ $$ = 0; }
+group_by_statement: GROUPBY BY columns[cols]												{ $$ = GroupByGrammarAction($cols); }
+				| 																		{ $$ = GroupByGrammarAction(NULL); }
 		;
 
-having_statement: HAVING having_condition												{ $$ = 0; }
-				| 																{ $$ = 0; }
+
+order_by_statement: ORDERBY BY columns[cols]												{ $$ = OrderByGrammarAction($cols); }
+				| 																		{ $$ = OrderByGrammarAction(NULL); }
 		;
 
-order_by_statement: ORDERBY columns													{ $$ = 0; }
-				| 																{ $$ = 0; }
-		;
-
-array: array COMMA array																			{ $$ = 0; }
-		| constant																				{ $$ = 0; }
+array: array[left] COMMA array[right]													{ $$ = ArrayGrammarAction($left, $right, NULL); }
+		| constant[cons]																{ $$ = ArrayGrammarAction(NULL, NULL, $cons); }
 	; 
 
 
-constant: INTEGER																			{ $$ = 0; }
-		| APOSTROPHE VAR APOSTROPHE															{ $$ = 0; }
-		| VAR																				{ $$ = 0; }
-		| VAR DOT VAR																		{ $$ = 0; }
-		| AST																				{ $$ = 0; }	
+constant: INTEGER[integer]																{ $$ = IntegerConstantGrammarAction($integer); }
+		| APOSTROPHE VAR[var] APOSTROPHE												{ $$ = ApostopheConstantGrammarAction($var); }
+		| VAR[var]																		{ $$ = VarConstantGrammarAction($var); }
+		| VAR[first] DOT VAR[second]													{ $$ = TableColumnConstantGrammarAction($first, $second); }
+		| ASTERIK																			{ $$ = AllConstantGrammarAction(); }	
 	;
 
 %%

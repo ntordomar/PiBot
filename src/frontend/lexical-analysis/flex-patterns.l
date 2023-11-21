@@ -46,8 +46,9 @@ whitespace		[ \f\n\r\t\v]
 "OR"                                        { return OrPatternAction(); }
 "NOT"                                       { return NotPatternAction(); }
 "IN"                                        { return InPatternAction(); }
-"GROUP BY"                                  { return GroupPatternAction(); }
-"ORDER BY"                                  { return OrderPatternAction(); }
+"GROUP"                                     { return GroupPatternAction(); }
+"ORDER"                                     { return OrderPatternAction(); }
+"BY"                                        { return ByPatternAction(); }
 "JOIN"                                      { return JoinPatternAction(); }
 "NATURAL"                                   { return NaturalPatternAction(); }
 "LEFT"                                      { return LeftPatternAction(); }
@@ -69,9 +70,9 @@ whitespace		[ \f\n\r\t\v]
 ")"                                         { return CloseParenthesisPatternAction(); }
 "."                                         { return DotPatternAction(); }
 
-"'"                                         { BEGIN(STRING); ApstrophePatternAction(); }
+"'"                                         { BEGIN(STRING);return ApstrophePatternAction(); }
 <STRING>{letter}+                            { return LetterPatternAction(yytext, yyleng); }
-<STRING>"'"                                 { BEGIN(INITIAL); ApstrophePatternAction(); }
+<STRING>"'"                                 { BEGIN(INITIAL); return ApstrophePatternAction(); }
 
 {digit}+									{ return IntegerPatternAction(yytext, yyleng); }
 {letter}+                                   { return LetterPatternAction(yytext, yyleng); }

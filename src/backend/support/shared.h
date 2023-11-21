@@ -3,6 +3,12 @@
 
 #include <stdio.h>
 #include "../semantic-analysis/abstract-syntax-tree.h"
+#include <stdbool.h>
+
+#define MAX_ERRORS 20
+
+static char * errorsName[MAX_ERRORS] = {NULL};
+extern int errorIndex;
 
 // Descriptor del archivo de entrada que utiliza Bison.
 extern FILE * yyin;
@@ -29,13 +35,6 @@ extern int yylex(void);
 // Función global del analizador sintáctico Bison.
 extern int yyparse(void);
 
-// Emular tipo "boolean".
-typedef enum {
-
-	false = 0,
-	true = 1
-} boolean;
-
 // El tipo de los tokens emitidos por Flex.
 typedef int token;
 
@@ -43,18 +42,13 @@ typedef int token;
 typedef struct {
 
 	// Indica si la compilación tuvo problemas hasta el momento.
-	boolean succeed;
+	bool succeed;
 
 	// Indica el resultado de la compilación (para la calculadora).
 	int result;
 
 	// El nodo raíz del AST (se usará cuando se implemente el backend).
 	Program * program;
-
-	// Agregar lo que sea necesario para el compilador.
-	// Agregar una pila para manipular scopes.
-	// Agregar una tabla de símbolos.
-	// ...
 
 } CompilerState;
 

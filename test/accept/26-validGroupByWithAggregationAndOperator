@@ -1,0 +1,3 @@
+SELECT price * AVG(something)
+FROM user
+GROUP BY price

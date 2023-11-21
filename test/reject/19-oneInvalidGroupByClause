@@ -1,0 +1,3 @@
+﻿SELECT id,count(name),alias
+FROM TEACHER
+GROUP BY name,id,aboutMe

@@ -1,0 +1,2 @@
+﻿SELECT unexistant.id,count(name),alias
+FROM teacher, users,teaches

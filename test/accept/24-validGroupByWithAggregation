@@ -1,0 +1,3 @@
+SELECT id, COUNT(*), AVG(something)
+FROM USERS
+GROUP BY id

@@ -1,0 +1,3 @@
+﻿SELECT count(name),alias
+FROM teacher AS other, users,teaches
+WHERE teacher.some = 9

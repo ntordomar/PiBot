@@ -1,0 +1,3 @@
+SELECT id
+FROM USERS
+GROUP BY id

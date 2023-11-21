@@ -8,10 +8,16 @@ cache/
 log/
 obj/
 node_modules/
+packages/
+temp/
+test-results/
+output/
 
 # Files:
 *.csproj.user
 *~
+*.bash_history
+.DS_Store
 
 # Project specific:
 bison-parser.c

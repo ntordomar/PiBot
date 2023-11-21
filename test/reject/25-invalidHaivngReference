@@ -1,0 +1,4 @@
+﻿SELECT count(name),alias
+FROM teacher, users,teaches
+GROUP BY alias
+HAVING nonsense.alias > 2023

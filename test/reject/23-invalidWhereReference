@@ -1,0 +1,3 @@
+﻿SELECT count(name),alias
+FROM teacher, users,teaches
+WHERE teacher.some = 9 and unexistant.name = 'agus'

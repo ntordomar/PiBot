@@ -1,4 +1,5 @@
 #include "../../backend/support/logger.h"
+#include "../../backend/support/memory-manager.h"
 #include "flex-actions.h"
 #include <stdlib.h>
 #include <string.h>
@@ -20,7 +21,7 @@
  */
 
 char * copyLexeme(const char * lexeme, const int length) {
-	char * lexemeCopy = (char *) calloc(length + 1, sizeof(char));
+	char * lexemeCopy = (char *) mm_calloc(length + 1, sizeof(char));
 	strncpy(lexemeCopy, lexeme, length);
 	return lexemeCopy;
 }
@@ -43,12 +44,13 @@ token IntegerPatternAction(const char * lexeme, const int length) {
 	LogDebug("[Flex] IntegerPatternAction: '%s' (length = %d).", lexeme, length);
 	char * lexemeCopy = copyLexeme(lexeme, length);
 	yylval.integer = atoi(lexemeCopy);
-	free(lexemeCopy);
 	return INTEGER;
 }
 
 token LetterPatternAction(const char * lexeme, const int length){
 	LogDebug("[Flex] LetterPatternAction '%s' (len = %d).",lexeme,length);
+    char * lexemeCopy = copyLexeme(lexeme, length);
+    yylval.varname = lexemeCopy;
 	return VAR;
 }
 
@@ -62,7 +64,6 @@ token OpenParenthesisPatternAction() {
 token UnknownPatternAction(const char * lexeme, const int length) {
 	char * lexemeCopy = copyLexeme(lexeme, length);
 	LogDebug("[Flex] UnknownPatternAction: '%s' (length = %d).", lexemeCopy, length);
-	free(lexemeCopy);
 	yylval.token = ERROR;
 	// Al emitir este token, el compilador aborta la ejecución.
 	return ERROR;
@@ -70,10 +71,9 @@ token UnknownPatternAction(const char * lexeme, const int length) {
 
 void IgnoredPatternAction(const char * lexeme, const int length) {
 	char * lexemeCopy = copyLexeme(lexeme, length);
-	LogRaw("[DEBUG] [Flex] IgnoredPatternAction: '");
+	LogDebug("[DEBUG] [Flex] IgnoredPatternAction: '");
 	LogText(lexemeCopy, length);
-	LogRaw("' (length = %d).\n", length);
-	free(lexemeCopy);
+	LogDebug("' (length = %d).\n", length);
 	// Como no debe hacer nada con el patrón, solo se loguea en consola.
 	// No se emite ningún token.
 }
@@ -151,15 +151,21 @@ token InPatternAction() {
 }
 
 token GroupPatternAction() {
-    LogDebug("[Flex] GroupPatternAction: 'GROUP BY'.");
+    LogDebug("[Flex] GroupPatternAction: 'GROUP'.");
     yylval.token = GROUPBY;
     return GROUPBY;
 }
 
 token OrderPatternAction() {
-    LogDebug("[Flex] OrderPatternAction: 'ORDER BY'.");
+    LogDebug("[Flex] OrderPatternAction: 'ORDER'.");
     yylval.token = ORDERBY;
     return ORDERBY;
+}
+
+token ByPatternAction() {
+    LogDebug("[Flex] OrderPatternAction: 'BY'.");
+    yylval.token = BY;
+    return BY;
 }
 
 token JoinPatternAction() {
@@ -261,8 +267,8 @@ token EqualPatternAction(){
 
 token AsteriskPatternAction(){
     LogDebug("[Flex] MulPatternAction: '*'.");
-    yylval.token = AST;
-    return AST;
+    yylval.token = ASTERIK;
+    return ASTERIK;
 }
 
 token DivPatternAction(){

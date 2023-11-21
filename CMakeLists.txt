@@ -20,6 +20,8 @@ if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
 	add_compile_options(-std=gnu99)
 	add_compile_options(-O3)
 
+	
+
 	# Compilar el scanner con Flex.
 	add_custom_command(
 		OUTPUT ../src/frontend/lexical-analysis/flex-scanner.c
@@ -63,10 +65,15 @@ add_executable(Compiler
 	src/backend/code-generation/generator.c
 	src/backend/domain-specific/calculator.c
 	src/backend/support/logger.c
+	src/backend/support/memory-manager.c
 	src/frontend/lexical-analysis/flex-actions.c
 	src/frontend/lexical-analysis/flex-scanner.c
 	src/frontend/syntactic-analysis/bison-actions.c
 	src/frontend/syntactic-analysis/bison-parser.c
+	src/backend/semantic-analysis/hashMap.c
+	src/backend/semantic-analysis/symbol_table.c
+	src/backend/semantic-analysis/table-list.c
+	src/backend/semantic-analysis/semantic-validator.c
 	# Agregar otros archivos *.c (si no se incluyen, no se compilan).
 	# ...
 )

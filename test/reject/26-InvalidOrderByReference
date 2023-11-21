@@ -1,0 +1,5 @@
+﻿SELECT count(name),alias
+FROM teacher, users,teaches
+GROUP BY alias
+HAVING alias > 2023
+ORDER BY other.name

@@ -1,0 +1,4 @@
+SELECT one.something, COUNT(one.bye)
+FROM (two NATURAL JOIN three) AS one
+WHERE other = 32 AND one.someother = 'someother'
+GROUP BY one.something
