@@ -23,10 +23,11 @@ Dentro del directorio script, ejecutar el archivo ./build.sh
 
 ## Ejecución
 - Dentro del archivo program ubicado en la root del proyecto escribir la consulta que se desee compilar
-- Ingresar al directorio 'script', y ejecutar program.sh
-- dentro de la carpeta output encontraras un archivo output.tex, el cual contendra el algebra relacional de la consulta
+- Ingresar al directorio 'script', y ejecutar "./program.sh program"
+- Dentro de la carpeta output encontraras un archivo output.tex, el cual contendra el algebra relacional de la consulta
+- Para ver el archivo, comiplarlo en overleaf
 
 
 ## Testing
 Para correr los tests parado desde el directorio 'script' ejecutar ./piBot-test.sh
-En caso de querer obtener los .tex de todos los tests aceptados, ejecutar tex-test.sh desde el directorio 'script'. Se generaran todos los .tex en una carpeta llamada "output" en la root. Para ver el latex, mirarlo desde overleaf
+En caso de querer obtener los .tex de todos los tests aceptados, ejecutar tex-test.sh desde el directorio 'script'. Se generaran todos los .tex en una carpeta llamada "output" en la root. Para ver el latex, compilarlo en overleaf.
