@@ -1,0 +1,1 @@
+SELECT * FROM student WHERE id < 9 AND name IN ('tordo','lucho','paz')
