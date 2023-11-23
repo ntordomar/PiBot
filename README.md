@@ -19,7 +19,7 @@ Para construir el compilador, se requieren las siguientes dependencias:
 Si en lugar de trabajar con un entorno _Linux_, se está construyendo el proyecto sobre un entorno _Microsoft Windows_, se debe instalar _Microsoft Visual Studio 2022_ con las extensiones para desarrollar aplicaciones en _C/C++_, así como también las herramientas requeridas, con excepción del compilador _GCC_ y la herramienta _Make_.
 
 ## Construcción
-
+Dentro del directorio script, ejecutar el archivo ./build.sh
 
 ## Ejecución
 - Dentro del archivo program ubicado en la root del proyecto escribir la consulta que se desee compilar
