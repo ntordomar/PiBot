@@ -1,6 +1,6 @@
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
-#include "hashmap.h"
+#include "hashMap.h"
 #include "table-list.h"
 
 
